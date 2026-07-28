@@ -63,7 +63,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative bg-gradient-to-br from-primary to-primary-dark py-20 text-white overflow-hidden">
+      <section className="relative bg-gradient-to-br from-primary to-primary-dark py-12 sm:py-20 text-white overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6 relative z-10">
@@ -104,9 +104,9 @@ export default function HomePage() {
                             className="w-full h-[350px] md:h-[450px] object-cover rounded-lg shadow-2xl"
                           />
                           {(slide.title || slide.subtitle) && (
-                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent rounded-b-lg p-6">
-                              {slide.title && <p className="text-white font-semibold text-lg">{slide.title}</p>}
-                              {slide.subtitle && <p className="text-white/80 text-sm mt-1">{slide.subtitle}</p>}
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent rounded-b-lg p-4 sm:p-6">
+                              {slide.title && <p className="text-white font-semibold text-base sm:text-lg line-clamp-2">{slide.title}</p>}
+                              {slide.subtitle && <p className="text-white/80 text-xs sm:text-sm mt-1 line-clamp-1">{slide.subtitle}</p>}
                             </div>
                           )}
                         </div>
@@ -124,13 +124,16 @@ export default function HomePage() {
                 />
               )}
               {slides.length > 1 && (
-                <div className="flex justify-center gap-2 mt-4">
+                <div className="flex justify-center gap-3 mt-4">
                   {slides.map((_, i) => (
                     <button
                       key={i}
                       onClick={() => api?.scrollTo(i)}
-                      className={`w-2 h-2 rounded-full transition-colors ${i === current ? "bg-white" : "bg-white/40"}`}
-                    />
+                      aria-label={`Slide ${i + 1}`}
+                      className={`w-3 h-3 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center -m-[18px]`}
+                    >
+                      <span className={`block w-2.5 h-2.5 rounded-full ${i === current ? "bg-white" : "bg-white/40"}`} />
+                    </button>
                   ))}
                 </div>
               )}

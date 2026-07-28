@@ -78,7 +78,7 @@ function FileInput({
         {file ? (
           <div className="flex items-center justify-center gap-2 text-sm">
             <FileText className="w-4 h-4 text-primary" />
-            <span className="truncate max-w-[200px]">{file.name}</span>
+            <span className="truncate max-w-[140px] sm:max-w-[200px]">{file.name}</span>
             <button
               type="button"
               className="text-red-500 hover:text-red-700 ml-2"
@@ -93,7 +93,7 @@ function FileInput({
           </div>
         ) : (
           <div className="text-muted-foreground">
-            <Upload className="w-6 h-2 mx-auto mb-2" />
+            <Upload className="w-6 h-6 mx-auto mb-2" />
             <p className="text-sm">Klik untuk unggah (PDF, max 5MB)</p>
           </div>
         )}
@@ -493,7 +493,7 @@ export default function PendaftaranPage() {
                 {/* Step 4: Review */}
                 {step === 4 && (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm">
                       <span className="text-muted-foreground">Tipe</span>
                       <span className="font-medium capitalize">{formData.tipe}</span>
                       <span className="text-muted-foreground">Nama Lengkap</span>
@@ -525,18 +525,15 @@ export default function PendaftaranPage() {
                     <div className="border-t pt-4 space-y-2">
                       <h4 className="font-semibold text-sm">Berkas</h4>
                       <ul className="text-sm space-y-1">
-                        <li className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-green-500" /> Surat Komitmen:
-                          {formData.fileKomitmen?.name}
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" /> <span className="break-all">{formData.fileKomitmen?.name}</span>
                         </li>
-                        <li className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-green-500" /> Bukti Instagram:
-                          {formData.fileBuktiIG?.name}
+                        <li className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" /> <span className="break-all">{formData.fileBuktiIG?.name}</span>
                         </li>
                         {formData.tipe === "atlet" && (
-                          <li className="flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4 text-green-500" /> Portofolio:
-                            {formData.filePortofolio?.name}
+                          <li className="flex items-start gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" /> <span className="break-all">{formData.filePortofolio?.name}</span>
                           </li>
                         )}
                       </ul>

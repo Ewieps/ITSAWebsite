@@ -1,10 +1,14 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { Menu, X } from "lucide-react"
 
 export default function Header() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
   const navigation = [
     { name: "Beranda", href: "/" },
     { name: "Tentang Kami", href: "/tentang-kami" },
@@ -25,30 +29,58 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center space-x-6">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm font-medium transition-colors hover:text-primary"
+                className="text-sm font-medium transition-colors hover:text-primary py-2"
               >
                 {item.name}
               </Link>
             ))}
           </nav>
 
-          {/* CTA Button */}
-          <div className="flex items-center space-x-4">
+          {/* Desktop CTA */}
+          <div className="hidden lg:flex items-center">
             <Button size="sm" className="bg-accent hover:bg-accent/90 text-primary-foreground" asChild>
               <Link href="/pendaftaran">Pendaftaran</Link>
             </Button>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="lg:hidden p-2.5 -mr-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
-      </div>
-            {/* <Button>Bergabung</Button>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="lg:hidden border-t bg-background pb-4">
+            <nav className="flex flex-col">
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="text-sm font-medium transition-colors hover:text-primary px-4 py-3 min-h-[44px] flex items-center"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
+              <div className="px-4 pt-3">
+                <Button className="w-full bg-accent hover:bg-accent/90 text-primary-foreground" asChild>
+                  <Link href="/pendaftaran" onClick={() => setIsMenuOpen(false)}>Pendaftaran</Link>
+                </Button>
+              </div>
+            </nav>
           </div>
-        </div>
-      </div> */}
+        )}
+      </div>
     </header>
   )
 }

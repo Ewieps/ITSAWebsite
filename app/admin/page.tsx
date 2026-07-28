@@ -129,17 +129,25 @@ function RegistrationDetail({ reg }: { reg: Registration }) {
           <div className="space-y-1">
             <span className="text-sm text-muted-foreground font-medium">Berkas</span>
             <div className="flex flex-wrap gap-2 text-sm">
-              <a href={reg.file_url_komitmen} target="_blank" rel="noopener noreferrer" className="underline text-accent hover:text-accent/80">
-                Surat Komitmen
-              </a>
-              <a href={reg.file_url_bukti_ig} target="_blank" rel="noopener noreferrer" className="underline text-accent hover:text-accent/80">
-                Bukti Instagram
-              </a>
-              {reg.file_url_portofolio && (
+              {reg.file_url_komitmen ? (
+                <a href={reg.file_url_komitmen} target="_blank" rel="noopener noreferrer" className="underline text-accent hover:text-accent/80">
+                  Surat Komitmen
+                </a>
+              ) : (
+                <span className="text-muted-foreground">Surat Komitmen: -</span>
+              )}
+              {reg.file_url_bukti_ig ? (
+                <a href={reg.file_url_bukti_ig} target="_blank" rel="noopener noreferrer" className="underline text-accent hover:text-accent/80">
+                  Bukti Instagram
+                </a>
+              ) : (
+                <span className="text-muted-foreground">Bukti Instagram: -</span>
+              )}
+              {reg.file_url_portofolio ? (
                 <a href={reg.file_url_portofolio} target="_blank" rel="noopener noreferrer" className="underline text-accent hover:text-accent/80">
                   Portofolio
                 </a>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

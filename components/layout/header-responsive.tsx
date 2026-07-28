@@ -47,7 +47,7 @@ export default function HeaderResponsive() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button className="lg:hidden p-2" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
+          <button className="lg:hidden p-2.5 -mr-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
@@ -60,7 +60,7 @@ export default function HeaderResponsive() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-sm font-medium transition-colors hover:text-primary"
+                  className="text-sm font-medium transition-colors hover:text-primary px-4 py-3 min-h-[44px] flex items-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
