@@ -23,17 +23,8 @@ async function getServerSupabase() {
   )
 }
 
-async function ensureBucket(supabase: Awaited<ReturnType<typeof getServerSupabase>>) {
-  const { data: buckets } = await supabase.storage.listBuckets()
-  const exists = buckets?.some((b) => b.name === BUCKET)
-  if (!exists) {
-    await supabase.storage.createBucket(BUCKET, { public: true })
-  }
-}
-
 export async function uploadFile(file: File, folder: string): Promise<string> {
   const supabase = await getServerSupabase()
-  await ensureBucket(supabase)
 
   const ext = file.name.split(".").pop() || "bin"
   const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
