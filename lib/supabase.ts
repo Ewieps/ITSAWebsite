@@ -8,14 +8,19 @@ export function createClient() {
 }
 
 let _supabase: ReturnType<typeof createClient> | null = null
-export function getSupabase() {
+function getClient() {
   if (!_supabase) _supabase = createClient()
   return _supabase
 }
+
 export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
   get(_, prop) {
-    return (getSupabase() as any)[prop]
+    const client = getClient()
+    const val = (client as Record<string | symbol, unknown>)[prop]
+    if (typeof val === "function") return (val as Function).bind(client)
+    return val
   },
+  has(_, prop) { return prop in getClient() },
 })
 
 export async function signIn(email: string, password: string) {

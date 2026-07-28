@@ -1,33 +1,11 @@
 import { NextResponse } from "next/server"
-import { writeFile } from "fs/promises"
-import { join } from "path"
-import { getServerUser } from "@/lib/supabase-server"
-
-const UPLOAD_DIR = join(process.cwd(), "public", "uploads", "registrations")
-
-function ensureDir(dir: string) {
-  const { existsSync, mkdirSync } = require("fs")
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true })
-  }
-}
-
-async function saveFile(file: File, subfolder: string): Promise<string> {
-  ensureDir(join(UPLOAD_DIR, subfolder))
-  const bytes = await file.arrayBuffer()
-  const buffer = Buffer.from(bytes)
-  const ext = file.name.split(".").pop() || "bin"
-  const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
-  const filepath = join(UPLOAD_DIR, subfolder, filename)
-  await writeFile(filepath, buffer)
-  return `/uploads/registrations/${subfolder}/${filename}`
-}
+import { createServerSupabase } from "@/lib/supabase-server"
+import { uploadFile } from "@/lib/storage"
 
 export async function POST(request: Request) {
   try {
-    // Check if registration is open via server client
-    const { createServerSupabase } = await import("@/lib/supabase-server")
     const supabase = await createServerSupabase()
+
     const { data: settings } = await supabase
       .from("settings")
       .select("value")
@@ -58,24 +36,23 @@ export async function POST(request: Request) {
       )
     }
 
-    // Save files
     let fileUrlKomitmen = ""
     let fileUrlBuktiIg = ""
     let fileUrlPortofolio: string | null = null
 
     const fileKomitmen = formData.get("fileKomitmen") as File | null
     if (fileKomitmen && fileKomitmen.size > 0) {
-      fileUrlKomitmen = await saveFile(fileKomitmen, "komitmen")
+      fileUrlKomitmen = await uploadFile(fileKomitmen, "registrations/komitmen")
     }
 
     const fileBuktiIg = formData.get("fileBuktiIg") as File | null
     if (fileBuktiIg && fileBuktiIg.size > 0) {
-      fileUrlBuktiIg = await saveFile(fileBuktiIg, "bukti-ig")
+      fileUrlBuktiIg = await uploadFile(fileBuktiIg, "registrations/bukti-ig")
     }
 
     const filePortofolio = formData.get("filePortofolio") as File | null
     if (filePortofolio && filePortofolio.size > 0) {
-      fileUrlPortofolio = await saveFile(filePortofolio, "portofolio")
+      fileUrlPortofolio = await uploadFile(filePortofolio, "registrations/portofolio")
     }
 
     const { error } = await supabase
