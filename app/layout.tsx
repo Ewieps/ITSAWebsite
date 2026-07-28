@@ -9,9 +9,9 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "ITS Archery - Komunitas Panahan ITS",
+  title: "ITS Archery - UKM Panahan ITS",
   description:
-    "Komunitas panahan terdepan di Institut Teknologi Sepuluh Nopember. Bergabunglah dengan kami untuk mengembangkan kemampuan panahan dan meraih prestasi.",
+    "Unik Kegiatan Mahasiswa Panahan Institut Teknologi Sepuluh Nopember. Bergabunglah dengan kami untuk mengembangkan kemampuan panahan dan meraih prestasi.",
   keywords: "ITS Archery, panahan, archery, ITS, Institut Teknologi Sepuluh Nopember, UKM, komunitas",
     generator: 'v0.dev'
 }

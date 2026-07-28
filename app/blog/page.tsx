@@ -92,10 +92,9 @@ export default function BlogPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <Badge className="bg-accent text-accent-foreground mb-6">Blog & Artikel</Badge>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">Pusat Pengetahuan Panahan</h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">Updates ITS Archery</h1>
             <p className="text-xl text-primary-foreground/80">
-              Temukan artikel, tips, tutorial, dan insight terbaru seputar dunia panahan dari para ahli dan praktisi
-              berpengalaman.
+              Temukan update terbaru tentang kegiatan, tips, dan artikel menarik seputar dunia panahan disini!
             </p>
           </div>
         </div>
@@ -105,8 +104,8 @@ export default function BlogPage() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="mb-12">
-            <h2 className="text-3xl font-bold mb-4">Artikel Pilihan</h2>
-            <p className="text-muted-foreground">Artikel terbaru dan paling populer dari komunitas kami</p>
+            <h2 className="text-3xl font-bold mb-4">Update terkini</h2>
+            <p className="text-muted-foreground">Artikel terbaru dan paling populer dari ITS Archery.</p>
           </div>
 
           <Card className="overflow-hidden hover:shadow-lg transition-shadow">

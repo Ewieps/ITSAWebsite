@@ -2,145 +2,208 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Calendar, Clock, Users, AlertCircle, CheckCircle } from "lucide-react"
+import {
+  Users,
+  Trophy,
+  AlertCircle,
+  CheckCircle,
+  ArrowLeft,
+  ArrowRight,
+  FileText,
+  Upload,
+  Download,
+  Instagram,
+  Clock,
+} from "lucide-react"
 
-// Konfigurasi periode pendaftaran
-const REGISTRATION_CONFIG = {
-  isOpen: true, // Ubah ke false untuk menutup pendaftaran
-  openDate: "1 Agustus 2024",
-  closeDate: "31 Agustus 2024",
-  maxParticipants: 50,
-  currentParticipants: 23,
+const PERTANYAAN_PENGETAHUAN = [
+  "Apa itu olahraga panahan?",
+  "Alat apa saja yang biasa digunakan selama olahraga panahan berlangsung?",
+]
+
+interface FormData {
+  tipe: "" | "umum" | "atlet"
+  namaLengkap: string
+  nrp: string
+  jurusan: string
+  noTelepon: string
+  jawaban: string[]
+  jenisPanah: string
+  fileKomitmen: File | null
+  fileBuktiIG: File | null
+  filePortofolio: File | null
+}
+
+function FileInput({
+  label,
+  icon: Icon,
+  file,
+  onChange,
+  required,
+  accept = ".pdf",
+}: {
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  file: File | null
+  onChange: (f: File | null) => void
+  required?: boolean
+  accept?: string
+}) {
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  return (
+    <div className="space-y-2">
+      <Label className="font-medium">
+        {label} {required && "*"}
+      </Label>
+      <div
+        className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 transition-colors"
+        onClick={() => inputRef.current?.click()}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          className="hidden"
+          onChange={(e) => onChange(e.target.files?.[0] || null)}
+        />
+        {file ? (
+          <div className="flex items-center justify-center gap-2 text-sm">
+            <FileText className="w-4 h-4 text-primary" />
+            <span className="truncate max-w-[200px]">{file.name}</span>
+            <button
+              type="button"
+              className="text-red-500 hover:text-red-700 ml-2"
+              onClick={(e) => {
+                e.stopPropagation()
+                onChange(null)
+                if (inputRef.current) inputRef.current.value = ""
+              }}
+            >
+              &times;
+            </button>
+          </div>
+        ) : (
+          <div className="text-muted-foreground">
+            <Upload className="w-6 h-2 mx-auto mb-2" />
+            <p className="text-sm">Klik untuk unggah (PDF, max 5MB)</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 export default function PendaftaranPage() {
-  const [formData, setFormData] = useState({
-    namaLengkap: "",
-    nim: "",
-    fakultas: "",
-    jurusan: "",
-    semester: "",
-    email: "",
-    noTelepon: "",
-    alamat: "",
-    pengalamanPanahan: "",
-    motivasi: "",
-    ketersediaan: "",
-    persetujuan: false,
-  })
-
+  const [step, setStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [regOpen, setRegOpen] = useState<boolean | null>(null)
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && data.settings.registration) {
+          setRegOpen(data.settings.registration.isOpen ?? true)
+        } else {
+          setRegOpen(true)
+        }
+      })
+      .catch(() => setRegOpen(true))
+  }, [])
+
+  const [formData, setFormData] = useState<FormData>({
+    tipe: "",
+    namaLengkap: "",
+    nrp: "",
+    jurusan: "",
+    noTelepon: "",
+    jawaban: ["", ""],
+    jenisPanah: "",
+    fileKomitmen: null,
+    fileBuktiIG: null,
+    filePortofolio: null,
+  })
+
+  const set = <K extends keyof FormData>(key: K, value: FormData[K]) =>
+    setFormData((prev) => ({ ...prev, [key]: value }))
+
+  const setJawaban = (index: number, value: string) =>
+    setFormData((prev) => ({
+      ...prev,
+      jawaban: prev.jawaban.map((j, i) => (i === index ? value : j)),
+    }))
+
+  const totalSteps = formData.tipe === "atlet" ? 5 : 4
+
+  const canNext = () => {
+    switch (step) {
+      case 0:
+        return formData.tipe !== ""
+      case 1:
+        return formData.namaLengkap.trim() !== "" && formData.nrp.trim() !== "" && formData.jurusan.trim() !== "" && formData.noTelepon.trim() !== "" && (formData.tipe !== "atlet" || formData.jenisPanah.trim() !== "")
+      case 2:
+        return formData.jawaban.every((j) => j.trim() !== "")
+      case 3:
+        return formData.fileKomitmen !== null && formData.fileBuktiIG !== null && (formData.tipe !== "atlet" || formData.filePortofolio !== null)
+      default:
+        return true
+    }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     setIsSubmitting(true)
+    setError(null)
 
-    // Simulasi API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      const fd = new FormData()
+      fd.append("namaLengkap", formData.namaLengkap)
+      fd.append("nrp", formData.nrp)
+      fd.append("jurusan", formData.jurusan)
+      fd.append("noTelepon", formData.noTelepon)
+      fd.append("tipe", formData.tipe)
+      fd.append(
+        "jawabanPengetahuan",
+        JSON.stringify(
+          PERTANYAAN_PENGETAHUAN.map((p, i) => ({
+            pertanyaan: p,
+            jawaban: formData.jawaban[i],
+          }))
+        )
+      )
+      if (formData.tipe === "atlet") {
+        fd.append("jenisPanah", formData.jenisPanah)
+      }
+      fd.append("fileKomitmen", formData.fileKomitmen!)
+      fd.append("fileBuktiIG", formData.fileBuktiIG!)
+      if (formData.tipe === "atlet" && formData.filePortofolio) {
+        fd.append("filePortofolio", formData.filePortofolio)
+      }
 
-    setIsSubmitting(false)
-    setIsSubmitted(true)
-  }
+      const res = await fetch("/api/register", { method: "POST", body: fd })
+      const data = await res.json()
 
-  const fakultasList = [
-    "Fakultas Teknologi Industri dan Rekayasa Sistem",
-    "Fakultas Teknik Sipil, Perencanaan, dan Kebumian",
-    "Fakultas Teknologi Kelautan",
-    "Fakultas Teknologi Elektro dan Informatika Cerdas",
-    "Fakultas Sains dan Analitika Data",
-    "Fakultas Vokasi",
-    "Fakultas Bisnis dan Manajemen Teknologi",
-  ]
+      if (!res.ok) {
+        setError(data.message || "Terjadi kesalahan.")
+        return
+      }
 
-  if (!REGISTRATION_CONFIG.isOpen) {
-    return (
-      <div className="min-h-screen">
-        {/* Hero Section */}
-        <section className="py-20 bg-gradient-to-br from-primary to-primary-dark text-white">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <Badge className="bg-red-500 text-white mb-6">Pendaftaran Ditutup</Badge>
-              <h1 className="text-4xl md:text-6xl font-bold mb-6">Pendaftaran ITS Archery</h1>
-              <p className="text-xl text-primary-foreground/80">
-                Pendaftaran anggota baru ITS Archery untuk periode ini telah ditutup.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Info Section */}
-        <section className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="max-w-2xl mx-auto">
-              <Alert className="border-red-200 bg-red-50">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-800">
-                  <strong>Pendaftaran Ditutup</strong>
-                  <br />
-                  Pendaftaran anggota baru telah ditutup pada {REGISTRATION_CONFIG.closeDate}. Pendaftaran berikutnya
-                  akan dibuka pada periode yang akan datang.
-                </AlertDescription>
-              </Alert>
-
-              <Card className="mt-8">
-                <CardHeader className="text-center">
-                  <CardTitle>Informasi Pendaftaran</CardTitle>
-                  <CardDescription>Detail periode pendaftaran ITS Archery</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="flex items-center gap-3">
-                      <Calendar className="w-5 h-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">Periode Pendaftaran</p>
-                        <p className="text-sm text-muted-foreground">
-                          {REGISTRATION_CONFIG.openDate} - {REGISTRATION_CONFIG.closeDate}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Users className="w-5 h-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">Kuota Peserta</p>
-                        <p className="text-sm text-muted-foreground">
-                          {REGISTRATION_CONFIG.currentParticipants}/{REGISTRATION_CONFIG.maxParticipants} pendaftar
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t">
-                    <h3 className="font-semibold mb-2">Ingin mendapat notifikasi pendaftaran berikutnya?</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Daftarkan email Anda untuk mendapat pemberitahuan ketika pendaftaran dibuka kembali.
-                    </p>
-                    <div className="flex gap-2">
-                      <Input placeholder="Email Anda" className="flex-1" />
-                      <Button>Notify Me</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-      </div>
-    )
+      setIsSubmitted(true)
+    } catch {
+      setError("Tidak dapat terhubung ke server.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (isSubmitted) {
@@ -157,49 +220,43 @@ export default function PendaftaranPage() {
             </div>
           </div>
         </section>
+      </div>
+    )
+  }
 
+  if (regOpen === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Memuat...</p>
+      </div>
+    )
+  }
+
+  if (!regOpen) {
+    return (
+      <div className="min-h-screen">
+        <section className="py-20 bg-gradient-to-br from-primary to-primary-dark text-white">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <Badge className="bg-red-500 text-white mb-6">Pendaftaran Ditutup</Badge>
+              <h1 className="text-4xl md:text-6xl font-bold mb-6">Pendaftaran ITS Archery</h1>
+              <p className="text-xl text-primary-foreground/80">
+                Pendaftaran anggota baru ITS Archery untuk periode ini telah ditutup.
+              </p>
+            </div>
+          </div>
+        </section>
         <section className="py-20">
           <div className="container mx-auto px-4">
             <div className="max-w-2xl mx-auto text-center">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Langkah Selanjutnya</CardTitle>
-                  <CardDescription>Apa yang akan terjadi setelah pendaftaran</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 text-left">
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold">
-                      1
-                    </div>
-                    <div>
-                      <p className="font-medium">Verifikasi Data</p>
-                      <p className="text-sm text-muted-foreground">
-                        Tim kami akan memverifikasi data yang Anda berikan
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold">
-                      2
-                    </div>
-                    <div>
-                      <p className="font-medium">Konfirmasi Email</p>
-                      <p className="text-sm text-muted-foreground">
-                        Anda akan menerima email konfirmasi dalam 1-2 hari kerja
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-sm font-bold">
-                      3
-                    </div>
-                    <div>
-                      <p className="font-medium">Orientasi Anggota</p>
-                      <p className="text-sm text-muted-foreground">Menghadiri sesi orientasi untuk anggota baru</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <Alert className="border-yellow-200 bg-yellow-50">
+                <Clock className="h-4 w-4 text-yellow-600" />
+                <AlertDescription className="text-yellow-800">
+                  <strong>Pendaftaran Ditutup</strong>
+                  <br />
+                  Pendaftaran anggota baru sedang ditutup. Silakan cek kembali nanti atau hubungi kami untuk informasi lebih lanjut.
+                </AlertDescription>
+              </Alert>
             </div>
           </div>
         </section>
@@ -209,7 +266,7 @@ export default function PendaftaranPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="py-20 bg-gradient-to-br from-primary to-primary-dark text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
@@ -222,144 +279,126 @@ export default function PendaftaranPage() {
         </div>
       </section>
 
-      {/* Registration Info */}
-      <section className="py-12 bg-secondary/30">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="text-center">
-              <Calendar className="w-8 h-8 text-primary mx-auto mb-2" />
-              <p className="font-semibold">Periode Pendaftaran</p>
-              <p className="text-sm text-muted-foreground">
-                {REGISTRATION_CONFIG.openDate} - {REGISTRATION_CONFIG.closeDate}
-              </p>
-            </div>
-            <div className="text-center">
-              <Users className="w-8 h-8 text-primary mx-auto mb-2" />
-              <p className="font-semibold">Kuota Tersisa</p>
-              <p className="text-sm text-muted-foreground">
-                {REGISTRATION_CONFIG.maxParticipants - REGISTRATION_CONFIG.currentParticipants} dari{" "}
-                {REGISTRATION_CONFIG.maxParticipants} slot
-              </p>
-            </div>
-            <div className="text-center">
-              <Clock className="w-8 h-8 text-primary mx-auto mb-2" />
-              <p className="font-semibold">Proses Seleksi</p>
-              <p className="text-sm text-muted-foreground">1-2 minggu setelah penutupan</p>
+      {/* Progress */}
+      {step > 0 && (
+        <section className="py-4 bg-secondary/30">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto flex items-center gap-2">
+              {Array.from({ length: totalSteps }, (_, i) => (
+                <div key={i} className="flex items-center gap-2 flex-1">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
+                      i < step
+                        ? "bg-primary text-white"
+                        : i === step
+                          ? "bg-primary text-white"
+                          : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {i < step ? <CheckCircle className="w-4 h-4" /> : i + 1}
+                  </div>
+                  {i < totalSteps - 1 && (
+                    <div className={`h-0.5 flex-1 ${i < step ? "bg-primary" : "bg-muted"}`} />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* Registration Form */}
+      {/* Form body */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">Form Pendaftaran Anggota Baru</CardTitle>
+                <CardTitle className="text-2xl">
+                  {step === 0 && "Pilih Jenis Pendaftaran"}
+                  {step === 1 && "Data Diri"}
+                  {step === 2 && "Pengetahuan Dasar Panahan"}
+                  {step === 3 && "Unggah Berkas"}
+                  {step === 4 && "Ringkasan"}
+                </CardTitle>
                 <CardDescription>
-                  Lengkapi semua data dengan benar. Pastikan informasi yang Anda berikan akurat.
+                  {step === 0 && "Tentukan jalur pendaftaran yang sesuai untuk Anda."}
+                  {step === 1 && "Lengkapi data diri Anda dengan benar."}
+                  {step === 2 && "Jawab pertanyaan berikut untuk menguji pemahaman Anda tentang panahan."}
+                  {step === 3 && "Unggah semua berkas yang diperlukan dalam format PDF."}
+                  {step === 4 && "Periksa kembali data Anda sebelum mengirim."}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Data Pribadi */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold border-b pb-2">Data Pribadi</h3>
+                {error && (
+                  <Alert className="mb-6 border-red-200 bg-red-50">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-red-800">{error}</AlertDescription>
+                  </Alert>
+                )}
 
+                {/* Step 0: Choose type */}
+                {step === 0 && (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => set("tipe", "umum")}
+                      className={`p-6 rounded-lg border-2 text-left transition-all hover:border-primary ${
+                        formData.tipe === "umum" ? "border-primary bg-primary/5" : "border-muted"
+                      }`}
+                    >
+                      <Users className="w-8 h-8 text-primary mb-3" />
+                      <h3 className="text-lg font-semibold mb-1">Umum (Pemula)</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Belum pernah atau baru mulai belajar panahan. Cocok untuk pemula.
+                      </p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => set("tipe", "atlet")}
+                      className={`p-6 rounded-lg border-2 text-left transition-all hover:border-primary ${
+                        formData.tipe === "atlet" ? "border-primary bg-primary/5" : "border-muted"
+                      }`}
+                    >
+                      <Trophy className="w-8 h-8 text-accent mb-3" />
+                      <h3 className="text-lg font-semibold mb-1">Atlet</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Sudah memiliki pengalaman dan peralatan panahan sendiri.
+                      </p>
+                    </button>
+                  </div>
+                )}
+
+                {/* Step 1: Personal info */}
+                {step === 1 && (
+                  <div className="space-y-4">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="namaLengkap">Nama Lengkap *</Label>
                         <Input
                           id="namaLengkap"
                           value={formData.namaLengkap}
-                          onChange={(e) => handleInputChange("namaLengkap", e.target.value)}
+                          onChange={(e) => set("namaLengkap", e.target.value)}
                           placeholder="Masukkan nama lengkap"
-                          required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="nim">NIM *</Label>
+                        <Label htmlFor="nrp">NRP *</Label>
                         <Input
-                          id="nim"
-                          value={formData.nim}
-                          onChange={(e) => handleInputChange("nim", e.target.value)}
+                          id="nrp"
+                          value={formData.nrp}
+                          onChange={(e) => set("nrp", e.target.value)}
                           placeholder="Contoh: 5025211234"
-                          required
                         />
                       </div>
                     </div>
-
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="fakultas">Fakultas *</Label>
-                        <select
-                          id="fakultas"
-                          value={formData.fakultas}
-                          onChange={(e) => handleInputChange("fakultas", e.target.value)}
-                          className="w-full px-3 py-2 border border-input rounded-md bg-background"
-                          required
-                        >
-                          <option value="">Pilih Fakultas</option>
-                          {fakultasList.map((fakultas) => (
-                            <option key={fakultas} value={fakultas}>
-                              {fakultas}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="jurusan">Jurusan/Departemen *</Label>
+                        <Label htmlFor="jurusan">Jurusan / Departemen *</Label>
                         <Input
                           id="jurusan"
                           value={formData.jurusan}
-                          onChange={(e) => handleInputChange("jurusan", e.target.value)}
+                          onChange={(e) => set("jurusan", e.target.value)}
                           placeholder="Contoh: Teknik Informatika"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="semester">Semester Saat Ini *</Label>
-                      <RadioGroup
-                        value={formData.semester}
-                        onValueChange={(value) => handleInputChange("semester", value)}
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="1-2" id="semester-1-2" />
-                          <Label htmlFor="semester-1-2">Semester 1-2</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="3-4" id="semester-3-4" />
-                          <Label htmlFor="semester-3-4">Semester 3-4</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="5-6" id="semester-5-6" />
-                          <Label htmlFor="semester-5-6">Semester 5-6</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="7+" id="semester-7" />
-                          <Label htmlFor="semester-7">Semester 7+</Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-                  </div>
-
-                  {/* Kontak */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold border-b pb-2">Informasi Kontak</h3>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email *</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => handleInputChange("email", e.target.value)}
-                          placeholder="nama@email.com"
-                          required
                         />
                       </div>
                       <div className="space-y-2">
@@ -367,108 +406,163 @@ export default function PendaftaranPage() {
                         <Input
                           id="noTelepon"
                           value={formData.noTelepon}
-                          onChange={(e) => handleInputChange("noTelepon", e.target.value)}
+                          onChange={(e) => set("noTelepon", e.target.value)}
                           placeholder="+62 812-3456-7890"
-                          required
                         />
                       </div>
                     </div>
+                    {formData.tipe === "atlet" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="jenisPanah">Jenis Panah yang Digunakan *</Label>
+                        <Input
+                          id="jenisPanah"
+                          value={formData.jenisPanah}
+                          onChange={(e) => set("jenisPanah", e.target.value)}
+                          placeholder="Contoh: Recurve, Compound, Traditional, dll."
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
 
-                    <div className="space-y-2">
-                      <Label htmlFor="alamat">Alamat Lengkap *</Label>
-                      <Textarea
-                        id="alamat"
-                        value={formData.alamat}
-                        onChange={(e) => handleInputChange("alamat", e.target.value)}
-                        placeholder="Masukkan alamat lengkap"
+                {/* Step 2: Knowledge */}
+                {step === 2 && (
+                  <div className="space-y-6">
+                    {PERTANYAAN_PENGETAHUAN.map((pertanyaan, i) => (
+                      <div key={i} className="space-y-2">
+                        <Label className="font-medium">
+                          {i + 1}. {pertanyaan}
+                        </Label>
+                        <Textarea
+                          value={formData.jawaban[i]}
+                          onChange={(e) => setJawaban(i, e.target.value)}
+                          placeholder="Tuliskan jawaban Anda di sini..."
+                          className="min-h-[100px]"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Step 3: File uploads */}
+                {step === 3 && (
+                  <div className="space-y-6">
+                    <Alert className="border-blue-200 bg-blue-50">
+                      <Download className="h-4 w-4 text-blue-600" />
+                      <AlertDescription className="text-blue-800">
+                        <strong>Unduh formulir</strong> di bawah, isi, llampirkan kembali sebagai PDF.
+                        <br />
+                        <a
+                          href="/formulir-pendaftaran.docx"
+                          download
+                          className="underline font-medium hover:text-blue-600 mt-1 inline-block"
+                        >
+                          Download Formulir Pendaftaran (.docx)
+                        </a>
+                      </AlertDescription>
+                    </Alert>
+
+                    <FileInput
+                      label="Surat Komitmen (PDF)"
+                      icon={FileText}
+                      file={formData.fileKomitmen}
+                      onChange={(f) => set("fileKomitmen", f)}
+                      required
+                    />
+
+                    <FileInput
+                      label="Bukti Follow Instagram ITS Archery (PDF)"
+                      icon={Instagram}
+                      file={formData.fileBuktiIG}
+                      onChange={(f) => set("fileBuktiIG", f)}
+                      required
+                    />
+
+                    {formData.tipe === "atlet" && (
+                      <FileInput
+                        label="Portofolio Panah (PDF)"
+                        icon={FileText}
+                        file={formData.filePortofolio}
+                        onChange={(f) => set("filePortofolio", f)}
                         required
                       />
-                    </div>
+                    )}
                   </div>
+                )}
 
-                  {/* Pengalaman & Motivasi */}
+                {/* Step 4: Review */}
+                {step === 4 && (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold border-b pb-2">Pengalaman & Motivasi</h3>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="pengalamanPanahan">Pengalaman Panahan</Label>
-                      <RadioGroup
-                        value={formData.pengalamanPanahan}
-                        onValueChange={(value) => handleInputChange("pengalamanPanahan", value)}
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="pemula" id="pemula" />
-                          <Label htmlFor="pemula">Pemula (belum pernah)</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="dasar" id="dasar" />
-                          <Label htmlFor="dasar">Dasar (pernah coba 1-5 kali)</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="menengah" id="menengah" />
-                          <Label htmlFor="menengah">Menengah (latihan rutin {"<"} 1 tahun)</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="berpengalaman" id="berpengalaman" />
-                          <Label htmlFor="berpengalaman">Berpengalaman ({">"} 1 tahun)</Label>
-                        </div>
-                      </RadioGroup>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                      <span className="text-muted-foreground">Tipe</span>
+                      <span className="font-medium capitalize">{formData.tipe}</span>
+                      <span className="text-muted-foreground">Nama Lengkap</span>
+                      <span className="font-medium">{formData.namaLengkap}</span>
+                      <span className="text-muted-foreground">NRP</span>
+                      <span className="font-medium">{formData.nrp}</span>
+                      <span className="text-muted-foreground">Jurusan</span>
+                      <span className="font-medium">{formData.jurusan}</span>
+                      <span className="text-muted-foreground">No. Telepon</span>
+                      <span className="font-medium">{formData.noTelepon}</span>
+                      {formData.tipe === "atlet" && (
+                        <>
+                          <span className="text-muted-foreground">Jenis Panah</span>
+                          <span className="font-medium">{formData.jenisPanah}</span>
+                        </>
+                      )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="motivasi">Motivasi Bergabung *</Label>
-                      <Textarea
-                        id="motivasi"
-                        value={formData.motivasi}
-                        onChange={(e) => handleInputChange("motivasi", e.target.value)}
-                        placeholder="Ceritakan motivasi Anda bergabung dengan ITS Archery..."
-                        className="min-h-[100px]"
-                        required
-                      />
+                    <div className="border-t pt-4 space-y-2">
+                      <h4 className="font-semibold text-sm">Jawaban Pengetahuan</h4>
+                      {PERTANYAAN_PENGETAHUAN.map((p, i) => (
+                        <div key={i} className="text-sm">
+                          <span className="text-muted-foreground">{p}</span>
+                          <p className="font-medium mt-1">{formData.jawaban[i]}</p>
+                        </div>
+                      ))}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="ketersediaan">Ketersediaan Waktu *</Label>
-                      <RadioGroup
-                        value={formData.ketersediaan}
-                        onValueChange={(value) => handleInputChange("ketersediaan", value)}
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="sangat-aktif" id="sangat-aktif" />
-                          <Label htmlFor="sangat-aktif">Sangat Aktif (bisa hadir semua latihan)</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="aktif" id="aktif" />
-                          <Label htmlFor="aktif">Aktif (bisa hadir 2-3x seminggu)</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="terbatas" id="terbatas" />
-                          <Label htmlFor="terbatas">Terbatas (1-2x seminggu)</Label>
-                        </div>
-                      </RadioGroup>
+                    <div className="border-t pt-4 space-y-2">
+                      <h4 className="font-semibold text-sm">Berkas</h4>
+                      <ul className="text-sm space-y-1">
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-500" /> Surat Komitmen:
+                          {formData.fileKomitmen?.name}
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-500" /> Bukti Instagram:
+                          {formData.fileBuktiIG?.name}
+                        </li>
+                        {formData.tipe === "atlet" && (
+                          <li className="flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-green-500" /> Portofolio:
+                            {formData.filePortofolio?.name}
+                          </li>
+                        )}
+                      </ul>
                     </div>
                   </div>
+                )}
 
-                  {/* Persetujuan */}
-                  <div className="space-y-4">
-                    <div className="flex items-start space-x-2">
-                      <Checkbox
-                        id="persetujuan"
-                        checked={formData.persetujuan}
-                        onCheckedChange={(checked) => handleInputChange("persetujuan", checked as boolean)}
-                      />
-                      <Label htmlFor="persetujuan" className="text-sm leading-relaxed">
-                        Saya menyetujui untuk mengikuti semua aturan dan ketentuan yang berlaku di ITS Archery, bersedia
-                        mengikuti program latihan yang telah ditetapkan, dan berkomitmen untuk aktif dalam kegiatan UKM.
-                        *
-                      </Label>
-                    </div>
-                  </div>
-
-                  <Button type="submit" className="w-full" size="lg" disabled={!formData.persetujuan || isSubmitting}>
-                    {isSubmitting ? "Mengirim..." : "Daftar Sekarang"}
-                  </Button>
-                </form>
+                {/* Navigation */}
+                <div className="flex justify-between mt-8">
+                  {step > 0 ? (
+                    <Button variant="outline" onClick={() => setStep((s) => s - 1)}>
+                      <ArrowLeft className="w-4 h-4 mr-2" /> Kembali
+                    </Button>
+                  ) : (
+                    <div />
+                  )}
+                  {step < totalSteps - 1 ? (
+                    <Button onClick={() => setStep((s) => s + 1)} disabled={!canNext()}>
+                      Selanjutnya <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  ) : (
+                    <Button onClick={handleSubmit} disabled={isSubmitting}>
+                      {isSubmitting ? "Mengirim..." : "Kirim Pendaftaran"}
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>

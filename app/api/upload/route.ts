@@ -1,8 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { writeFile } from "fs/promises"
 import { join } from "path"
+import { getServerUser } from "@/lib/supabase-server"
 
 export async function POST(request: NextRequest) {
+  const user = await getServerUser()
+  if (!user) {
+    return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 })
+  }
+
   try {
     const data = await request.formData()
     const file: File | null = data.get("file") as unknown as File
@@ -15,21 +21,17 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Create filename with timestamp to avoid conflicts
     const timestamp = Date.now()
     const filename = `${timestamp}-${file.name}`
 
-    // Create category folder path
     const categoryPath = join(process.cwd(), "public", "uploads", category)
     const filePath = join(categoryPath, filename)
 
-    // Create directory if it doesn't exist
     const fs = require("fs")
     if (!fs.existsSync(categoryPath)) {
       fs.mkdirSync(categoryPath, { recursive: true })
     }
 
-    // Write file
     await writeFile(filePath, buffer)
 
     return NextResponse.json({

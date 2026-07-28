@@ -1,8 +1,8 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Target } from "lucide-react"
 
 export default function Header() {
   const navigation = [
@@ -11,7 +11,6 @@ export default function Header() {
     { name: "Prestasi", href: "/prestasi" },
     { name: "Kegiatan", href: "/kegiatan" },
     { name: "Galeri", href: "/galeri" },
-    { name: "Blog", href: "/blog" },
     { name: "Kontak", href: "/kontak" },
   ]
 
@@ -21,13 +20,11 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-              <Target className="w-5 h-5 text-white" />
-            </div>
+            <Image src="/uploads/material/ITSAlogo.png" alt="ITS Archery" width={32} height={32} className="rounded" />
             <span className="font-bold text-xl">ITS Archery</span>
           </Link>
 
-          {/* Desktop Navigation - Always visible */}
+          {/* Desktop Navigation */}
           <nav className="flex items-center space-x-8">
             {navigation.map((item) => (
               <Link
@@ -42,10 +39,16 @@ export default function Header() {
 
           {/* CTA Button */}
           <div className="flex items-center space-x-4">
-            <Button>Bergabung</Button>
+            <Button size="sm" className="bg-accent hover:bg-accent/90 text-primary-foreground" asChild>
+              <Link href="/pendaftaran">Pendaftaran</Link>
+            </Button>
           </div>
         </div>
       </div>
+            {/* <Button>Bergabung</Button>
+          </div>
+        </div>
+      </div> */}
     </header>
   )
 }
