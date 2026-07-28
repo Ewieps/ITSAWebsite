@@ -7,7 +7,16 @@ export function createClient() {
   )
 }
 
-export const supabase = createClient()
+let _supabase: ReturnType<typeof createClient> | null = null
+export function getSupabase() {
+  if (!_supabase) _supabase = createClient()
+  return _supabase
+}
+export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
+  get(_, prop) {
+    return (getSupabase() as any)[prop]
+  },
+})
 
 export async function signIn(email: string, password: string) {
   return supabase.auth.signInWithPassword({ email, password })
