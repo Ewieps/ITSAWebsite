@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       fileUrlKomitmen = await uploadFile(fileKomitmen, "registrations/komitmen")
     }
 
-    const fileBuktiIg = formData.get("fileBuktiIg") as File | null
+    const fileBuktiIg = formData.get("fileBuktiIG") as File | null
     if (fileBuktiIg && fileBuktiIg.size > 0) {
       fileUrlBuktiIg = await uploadFile(fileBuktiIg, "registrations/bukti-ig")
     }
