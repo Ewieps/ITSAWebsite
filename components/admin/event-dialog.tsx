@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -42,6 +42,12 @@ const EMPTY: Partial<Event> = {
 export function EventDialog({ item, open, onClose, onSave }: Props) {
   const [form, setForm] = useState<Partial<Event>>(EMPTY)
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      setForm(item ? { ...item } : { ...EMPTY })
+    }
+  }, [open, item])
 
   const handleOpen = (nextOpen: boolean) => {
     if (nextOpen && item) {

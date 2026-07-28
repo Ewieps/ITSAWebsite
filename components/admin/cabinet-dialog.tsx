@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -47,6 +47,14 @@ export function CabinetDialog({ cabinet, members, open, onClose, onSaveCabinet, 
   const [saving, setSaving] = useState(false)
   const [showAddMember, setShowAddMember] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      setForm(cabinet ? { ...cabinet } : { ...EMPTY_CABINET })
+      setShowAddMember(false)
+      setMemberForm({ ...EMPTY_MEMBER })
+    }
+  }, [open, cabinet])
 
   const handleOpen = (nextOpen: boolean) => {
     if (nextOpen && cabinet) {

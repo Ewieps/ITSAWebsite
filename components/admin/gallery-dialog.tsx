@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -32,6 +32,12 @@ export function GalleryDialog({ item, open, onClose, onSave }: Props) {
   const [form, setForm] = useState<Partial<GalleryImage>>(EMPTY)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      setForm(item ? { ...item } : { ...EMPTY })
+    }
+  }, [open, item])
 
   const handleOpen = (nextOpen: boolean) => {
     if (nextOpen && item) {
