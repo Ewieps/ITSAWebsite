@@ -32,6 +32,12 @@ export default function AdminLoginPage() {
       return
     }
 
+    fetch("/api/admin/logs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "login" }),
+    }).catch(() => {})
+
     router.push("/admin")
     router.refresh()
   }

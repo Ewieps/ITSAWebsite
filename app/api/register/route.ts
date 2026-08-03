@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { createServerSupabase } from "@/lib/supabase-server"
-import { uploadFile } from "@/lib/storage"
+import { appendRegistrationToSheet } from "@/lib/sheets"
 
 export async function POST(request: Request) {
   try {
@@ -19,15 +19,18 @@ export async function POST(request: Request) {
       )
     }
 
-    const formData = await request.formData()
+    const body = await request.json()
 
-    const namaLengkap = formData.get("namaLengkap") as string
-    const nrp = formData.get("nrp") as string
-    const jurusan = formData.get("jurusan") as string
-    const noTelepon = formData.get("noTelepon") as string
-    const tipe = formData.get("tipe") as string
-    const jawabanPengetahuan = JSON.parse(formData.get("jawabanPengetahuan") as string || "[]")
-    const jenisPanah = formData.get("jenisPanah") as string || null
+    const namaLengkap = body.namaLengkap as string
+    const nrp = body.nrp as string
+    const jurusan = body.jurusan as string
+    const noTelepon = body.noTelepon as string
+    const tipe = body.tipe as string
+    const jawabanPengetahuan = (body.jawabanPengetahuan as { pertanyaan: string; jawaban: string }[]) || []
+    const jenisPanah = (body.jenisPanah as string) || null
+    const fileUrlKomitmen = (body.fileUrlKomitmen as string) || ""
+    const fileUrlBuktiIg = (body.fileUrlBuktiIg as string) || ""
+    const fileUrlPortofolio = (body.fileUrlPortofolio as string) || null
 
     if (!namaLengkap || !nrp || !jurusan || !noTelepon || !tipe) {
       return NextResponse.json(
@@ -36,23 +39,11 @@ export async function POST(request: Request) {
       )
     }
 
-    let fileUrlKomitmen = ""
-    let fileUrlBuktiIg = ""
-    let fileUrlPortofolio: string | null = null
-
-    const fileKomitmen = formData.get("fileKomitmen") as File | null
-    if (fileKomitmen && fileKomitmen.size > 0) {
-      fileUrlKomitmen = await uploadFile(fileKomitmen, "registrations/komitmen")
-    }
-
-    const fileBuktiIg = formData.get("fileBuktiIG") as File | null
-    if (fileBuktiIg && fileBuktiIg.size > 0) {
-      fileUrlBuktiIg = await uploadFile(fileBuktiIg, "registrations/bukti-ig")
-    }
-
-    const filePortofolio = formData.get("filePortofolio") as File | null
-    if (filePortofolio && filePortofolio.size > 0) {
-      fileUrlPortofolio = await uploadFile(filePortofolio, "registrations/portofolio")
+    if (!fileUrlKomitmen || !fileUrlBuktiIg) {
+      return NextResponse.json(
+        { success: false, message: "Berkas wajib diunggah." },
+        { status: 400 }
+      )
     }
 
     const { error } = await supabase
@@ -82,6 +73,18 @@ export async function POST(request: Request) {
         { success: false, message: "Gagal menyimpan data." },
         { status: 500 }
       )
+    }
+
+    // Best-effort Google Sheets sync — never fails the registration
+    const inserted = await supabase
+      .from("registrations")
+      .select("*")
+      .eq("nrp", nrp)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (inserted.data) {
+      appendRegistrationToSheet(inserted.data).catch(() => {})
     }
 
     return NextResponse.json({ success: true, message: "Pendaftaran berhasil!" })

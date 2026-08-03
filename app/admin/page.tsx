@@ -168,10 +168,12 @@ export default function AdminPage() {
   const [contactPhone, setContactPhone] = useState("")
   const [contactEmail, setContactEmail] = useState("")
   const [contactInstagram, setContactInstagram] = useState("")
+  const [contactYoutube, setContactYoutube] = useState("")
   const [savingContact, setSavingContact] = useState(false)
 
   // Registrations
   const [registrations, setRegistrations] = useState<Registration[]>([])
+  const [syncingSheets, setSyncingSheets] = useState(false)
   const [loadingReg, setLoadingReg] = useState(true)
 
   // Achievements
@@ -220,6 +222,7 @@ export default function AdminPage() {
           setContactPhone(data.settings.contact.phone || "")
           setContactEmail(data.settings.contact.email || "")
           setContactInstagram(data.settings.contact.instagram || "")
+          setContactYoutube(data.settings.contact.youtube || "")
         }
       }
     } catch { /* ignore */ }
@@ -296,7 +299,7 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           key: "contact",
-          value: { phone: contactPhone, email: contactEmail, instagram: contactInstagram },
+          value: { phone: contactPhone, email: contactEmail, instagram: contactInstagram, youtube: contactYoutube },
         }),
       })
     } catch { /* ignore */ }
@@ -304,6 +307,18 @@ export default function AdminPage() {
   }
 
   // ---- CRUD ----
+  const handleSheetsSync = async () => {
+    setSyncingSheets(true)
+    try {
+      const res = await fetch("/api/admin/sheets-sync", { method: "POST" })
+      const data = await res.json()
+      alert(data.message || (data.success ? "Sinkronisasi berhasil." : "Sinkronisasi gagal."))
+    } catch {
+      alert("Tidak dapat terhubung ke server.")
+    }
+    setSyncingSheets(false)
+  }
+
   const handleSaveAchievement = async (data: Partial<Achievement>) => {
     if (data.id) {
       await apiAdmin("/api/admin/achievements", "PUT", data)
@@ -372,8 +387,16 @@ export default function AdminPage() {
   }
 
   const handleLogout = async () => {
-    await signOut()
-    router.push("/admin/login")
+    fetch("/api/admin/logs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "logout" }),
+    })
+      .catch(() => {})
+      .finally(async () => {
+        await signOut()
+        router.push("/admin/login")
+      })
   }
 
   if (!authChecked) {
@@ -422,7 +445,7 @@ export default function AdminPage() {
             {/* Contact info */}
             <div className="border-t pt-4">
               <p className="font-medium mb-3">Informasi Kontak (ditampilkan di halaman Kontak)</p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="space-y-1">
                   <Label className="text-xs">No. Telepon</Label>
                   <Input size={1} value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="08xxx" />
@@ -434,6 +457,10 @@ export default function AdminPage() {
                 <div className="space-y-1">
                   <Label className="text-xs">Instagram</Label>
                   <Input size={1} value={contactInstagram} onChange={(e) => setContactInstagram(e.target.value)} placeholder="@its_archery" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">YouTube</Label>
+                  <Input size={1} value={contactYoutube} onChange={(e) => setContactYoutube(e.target.value)} placeholder="youtube.com/@itsarchery" />
                 </div>
               </div>
               <Button size="sm" className="mt-3" disabled={savingContact} onClick={saveContactSetting}>
@@ -457,8 +484,11 @@ export default function AdminPage() {
           {/* ---- Registrations ---- */}
           <TabsContent value="registrations">
             <div className="space-y-3">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                 <p className="text-sm text-muted-foreground">{registrations.length} pendaftaran terdaftar</p>
+                <Button size="sm" variant="outline" onClick={handleSheetsSync} disabled={syncingSheets}>
+                  {syncingSheets ? "Menyinkronkan..." : "Sinkronkan ke Google Sheets"}
+                </Button>
               </div>
               {loadingReg ? (
                 <p className="text-muted-foreground text-sm">Memuat data...</p>

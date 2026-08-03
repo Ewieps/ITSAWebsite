@@ -6,33 +6,34 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { MapPin, Phone, Mail, Clock, Instagram, Facebook, Youtube } from "lucide-react"
+import { MapPin, Phone, Mail, Clock, Instagram, Youtube } from "lucide-react"
 
 interface ContactInfo {
   address: string
-  phone: string[]
-  email: string[]
+  phone: string
+  email: string
+  instagram: string
+  youtube: string
   hours: string[]
-  socials: { platform: string; url: string }[]
   faq: { question: string; answer: string }[]
 }
 
 const FALLBACK: ContactInfo = {
   address: "Gedung Student Center ITS\nJl. Raya ITS, Keputih, Sukolilo\nSurabaya, Jawa Timur 60111",
-  phone: ["+62 812-3456-7890"],
-  email: ["info@itsarchery.com"],
+  phone: "+62 812-3456-7890",
+  email: "info@itsarchery.com",
+  instagram: "",
+  youtube: "",
   hours: ["Senin - Jumat: 16:00 - 18:00 WIB", "Sabtu: 09:00 - 12:00 WIB", "Minggu: Tutup"],
-  socials: [],
   faq: [
     { question: "Bagaimana cara bergabung dengan ITS Archery?", answer: "Anda dapat mendaftar melalui open recruitment yang biasanya diadakan di awal semester atau menghubungi kami langsung melalui kontak yang tersedia." },
     { question: "Apakah pemula bisa bergabung?", answer: "Tentu saja! Kami menerima anggota dari semua level, termasuk pemula. Kami memiliki program pelatihan khusus untuk pemula." },
   ],
 }
 
-const socialIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  instagram: Instagram,
-  facebook: Facebook,
-  youtube: Youtube,
+const toUrl = (value: string, fallback: string) => {
+  if (!value) return fallback
+  return value.startsWith("http") ? value : `https://${value}`
 }
 
 export default function KontakPage() {
@@ -43,7 +44,15 @@ export default function KontakPage() {
       .then((r) => r.json())
       .then((data) => {
         if (data.success && data.settings.contact) {
-          setContact({ ...FALLBACK, ...data.settings.contact })
+          const c = data.settings.contact
+          setContact({
+            ...FALLBACK,
+            address: c.address || FALLBACK.address,
+            phone: Array.isArray(c.phone) ? c.phone[0] || "" : (c.phone || ""),
+            email: Array.isArray(c.email) ? c.email[0] || "" : (c.email || ""),
+            instagram: c.instagram || "",
+            youtube: c.youtube || "",
+          })
         }
       })
       .catch(() => {})
@@ -95,11 +104,9 @@ export default function KontakPage() {
                       <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
                         <Phone className="w-6 h-6 text-accent" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h3 className="font-semibold mb-2">Nomor Telepon</h3>
-                        {contact.phone.map((p, i) => (
-                          <p key={i} className="text-muted-foreground">{p}</p>
-                        ))}
+                        <p className="text-muted-foreground break-all">{contact.phone || "-"}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -111,11 +118,11 @@ export default function KontakPage() {
                       <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
                         <Mail className="w-6 h-6 text-primary" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h3 className="font-semibold mb-2">Email</h3>
-                        {contact.email.map((e, i) => (
-                          <p key={i} className="text-muted-foreground">{e}</p>
-                        ))}
+                        <a href={contact.email ? `mailto:${contact.email}` : undefined} className="text-muted-foreground hover:text-primary break-all">
+                          {contact.email || "-"}
+                        </a>
                       </div>
                     </div>
                   </CardContent>
@@ -138,20 +145,24 @@ export default function KontakPage() {
                 </Card>
               </div>
 
-              {contact.socials.length > 0 && (
+              {(contact.instagram || contact.youtube) && (
                 <div>
                   <h3 className="text-xl font-semibold mb-4">Ikuti Kami</h3>
                   <div className="flex gap-4">
-                    {contact.socials.map((s, i) => {
-                      const Icon = socialIcons[s.platform.toLowerCase()] || Instagram
-                      return (
-                        <a key={i} href={s.url} target="_blank" rel="noopener noreferrer">
-                          <Button variant="outline" size="icon" className="rounded-full bg-transparent">
-                            <Icon className="w-5 h-5" />
-                          </Button>
-                        </a>
-                      )
-                    })}
+                    {contact.instagram && (
+                      <a href={toUrl(contact.instagram, "#")} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" size="icon" className="rounded-full bg-transparent">
+                          <Instagram className="w-5 h-5" />
+                        </Button>
+                      </a>
+                    )}
+                    {contact.youtube && (
+                      <a href={toUrl(contact.youtube, "#")} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" size="icon" className="rounded-full bg-transparent">
+                          <Youtube className="w-5 h-5" />
+                        </Button>
+                      </a>
+                    )}
                   </div>
                 </div>
               )}

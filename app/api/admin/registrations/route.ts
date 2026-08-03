@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { createServerSupabase, getServerUser } from "@/lib/supabase-server"
+import { logAdminAction } from "@/lib/audit-log"
 
 export async function GET() {
   const supabase = await createServerSupabase()
@@ -28,6 +29,12 @@ export async function DELETE(request: Request) {
     if (error) {
       return NextResponse.json({ success: false, message: error.message }, { status: 500 })
     }
+    await logAdminAction(supabase, {
+      actor: user.email || "unknown",
+      action: "delete",
+      entity: "registrations",
+      entity_id: id,
+    })
     return NextResponse.json({ success: true })
   } catch {
     return NextResponse.json({ success: false, message: "Invalid request" }, { status: 400 })

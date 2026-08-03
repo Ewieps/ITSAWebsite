@@ -23,6 +23,7 @@ import {
   Instagram,
   Clock,
 } from "lucide-react"
+import { uploadFileClient } from "@/lib/storage-client"
 
 const PERTANYAAN_PENGETAHUAN = [
   "Apa itu olahraga panahan?",
@@ -58,6 +59,7 @@ function FileInput({
   accept?: string
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [sizeError, setSizeError] = useState<string | null>(null)
 
   return (
     <div className="space-y-2">
@@ -73,7 +75,17 @@ function FileInput({
           type="file"
           accept={accept}
           className="hidden"
-          onChange={(e) => onChange(e.target.files?.[0] || null)}
+          onChange={(e) => {
+            const f = e.target.files?.[0] || null
+            if (f && f.size > 1024 * 1024) {
+              setSizeError("File melebihi 1MB.")
+              onChange(null)
+              if (inputRef.current) inputRef.current.value = ""
+            } else {
+              setSizeError(null)
+              onChange(f)
+            }
+          }}
         />
         {file ? (
           <div className="flex items-center justify-center gap-2 text-sm">
@@ -94,10 +106,11 @@ function FileInput({
         ) : (
           <div className="text-muted-foreground">
             <Upload className="w-6 h-6 mx-auto mb-2" />
-            <p className="text-sm">Klik untuk unggah (PDF, max 5MB)</p>
+            <p className="text-sm">Klik untuk unggah (PDF, max 1MB)</p>
           </div>
         )}
       </div>
+      {sizeError && <p className="text-sm text-red-600">{sizeError}</p>}
     </div>
   )
 }
@@ -166,31 +179,35 @@ export default function PendaftaranPage() {
     setError(null)
 
     try {
-      const fd = new FormData()
-      fd.append("namaLengkap", formData.namaLengkap)
-      fd.append("nrp", formData.nrp)
-      fd.append("jurusan", formData.jurusan)
-      fd.append("noTelepon", formData.noTelepon)
-      fd.append("tipe", formData.tipe)
-      fd.append(
-        "jawabanPengetahuan",
-        JSON.stringify(
-          PERTANYAAN_PENGETAHUAN.map((p, i) => ({
+      const uploads: Promise<string | null>[] = [
+        uploadFileClient(formData.fileKomitmen!, "registrations/komitmen"),
+        uploadFileClient(formData.fileBuktiIG!, "registrations/bukti-ig"),
+        formData.tipe === "atlet" && formData.filePortofolio
+          ? uploadFileClient(formData.filePortofolio, "registrations/portofolio")
+          : Promise.resolve(null),
+      ]
+
+      const [fileUrlKomitmen, fileUrlBuktiIg, fileUrlPortofolio] = await Promise.all(uploads)
+
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          namaLengkap: formData.namaLengkap,
+          nrp: formData.nrp,
+          jurusan: formData.jurusan,
+          noTelepon: formData.noTelepon,
+          tipe: formData.tipe,
+          jawabanPengetahuan: PERTANYAAN_PENGETAHUAN.map((p, i) => ({
             pertanyaan: p,
             jawaban: formData.jawaban[i],
-          }))
-        )
-      )
-      if (formData.tipe === "atlet") {
-        fd.append("jenisPanah", formData.jenisPanah)
-      }
-      fd.append("fileKomitmen", formData.fileKomitmen!)
-      fd.append("fileBuktiIG", formData.fileBuktiIG!)
-      if (formData.tipe === "atlet" && formData.filePortofolio) {
-        fd.append("filePortofolio", formData.filePortofolio)
-      }
-
-      const res = await fetch("/api/register", { method: "POST", body: fd })
+          })),
+          jenisPanah: formData.tipe === "atlet" ? formData.jenisPanah : null,
+          fileUrlKomitmen,
+          fileUrlBuktiIg,
+          fileUrlPortofolio,
+        }),
+      })
       const data = await res.json()
 
       if (!res.ok) {
@@ -215,7 +232,7 @@ export default function PendaftaranPage() {
               <CheckCircle className="w-16 h-16 mx-auto mb-6" />
               <h1 className="text-4xl md:text-6xl font-bold mb-6">Pendaftaran Berhasil!</h1>
               <p className="text-xl text-green-100">
-                Terima kasih telah mendaftar sebagai anggota ITS Archery. Kami akan menghubungi Anda segera.
+                Terima kasih telah mendaftar sebagai anggota ITS Archery. Kami akan menghubungi Anda untuk informasi lebih lanjut. Pastikan untuk memeriksa email dan nomor telepon Anda secara berkala.
               </p>
             </div>
           </div>
@@ -241,7 +258,7 @@ export default function PendaftaranPage() {
               <Badge className="bg-red-500 text-white mb-6">Pendaftaran Ditutup</Badge>
               <h1 className="text-4xl md:text-6xl font-bold mb-6">Pendaftaran ITS Archery</h1>
               <p className="text-xl text-primary-foreground/80">
-                Pendaftaran anggota baru ITS Archery untuk periode ini telah ditutup.
+                Pendaftaran anggota baru ITS Archery untuk periode GEREX 2026 telah ditutup.
               </p>
             </div>
           </div>
@@ -273,7 +290,7 @@ export default function PendaftaranPage() {
             <Badge className="bg-green-500 text-white mb-6">Pendaftaran Dibuka</Badge>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">Bergabung dengan ITS Archery</h1>
             <p className="text-xl text-primary-foreground/80">
-              Daftarkan diri Anda sekarang dan jadilah bagian dari komunitas panahan terbaik di ITS.
+              Daftarkan diri Anda sekarang dan jadilah bagian dari komunitas panahan ITS Archery. 
             </p>
           </div>
         </div>
@@ -347,9 +364,9 @@ export default function PendaftaranPage() {
                       }`}
                     >
                       <Users className="w-8 h-8 text-primary mb-3" />
-                      <h3 className="text-lg font-semibold mb-1">Umum (Pemula)</h3>
+                      <h3 className="text-lg font-semibold mb-1">Umum</h3>
                       <p className="text-sm text-muted-foreground">
-                        Belum pernah atau baru mulai belajar panahan. Cocok untuk pemula.
+                        Belum pernah, baru mulai, atau kembali belajar panahan? Daftar disini!
                       </p>
                     </button>
                     <button
@@ -362,7 +379,7 @@ export default function PendaftaranPage() {
                       <Trophy className="w-8 h-8 text-accent mb-3" />
                       <h3 className="text-lg font-semibold mb-1">Atlet</h3>
                       <p className="text-sm text-muted-foreground">
-                        Sudah memiliki pengalaman dan peralatan panahan sendiri.
+                        Bagi yang sudah memiliki pengalaman dan peralatan panahan sendiri.
                       </p>
                     </button>
                   </div>
@@ -387,7 +404,7 @@ export default function PendaftaranPage() {
                           id="nrp"
                           value={formData.nrp}
                           onChange={(e) => set("nrp", e.target.value)}
-                          placeholder="Contoh: 5025211234"
+                          placeholder="Contoh: 501226000"
                         />
                       </div>
                     </div>
@@ -407,7 +424,7 @@ export default function PendaftaranPage() {
                           id="noTelepon"
                           value={formData.noTelepon}
                           onChange={(e) => set("noTelepon", e.target.value)}
-                          placeholder="+62 812-3456-7890"
+                          placeholder="081234567890"
                         />
                       </div>
                     </div>
@@ -450,7 +467,7 @@ export default function PendaftaranPage() {
                     <Alert className="border-blue-200 bg-blue-50">
                       <Download className="h-4 w-4 text-blue-600" />
                       <AlertDescription className="text-blue-800">
-                        <strong>Unduh formulir</strong> di bawah, isi, llampirkan kembali sebagai PDF.
+                        <strong>Unduh formulir</strong> di bawah, isi, dan lampirkan kembali sebagai PDF.
                         <br />
                         <a
                           href="/formulir-pendaftaran.docx"
