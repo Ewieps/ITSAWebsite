@@ -26,6 +26,7 @@ const EMPTY: Partial<GalleryImage> = {
   description: "",
   category: "",
   image_url: "",
+  upload_date: new Date().toISOString().slice(0, 10),
 }
 
 export function GalleryDialog({ item, open, onClose, onSave }: Props) {
@@ -97,16 +98,20 @@ export function GalleryDialog({ item, open, onClose, onSave }: Props) {
             <Input value={form.category || ""} onChange={(e) => set("category", e.target.value)} placeholder="Latihan / Kompetisi / etc." required />
           </div>
           <div className="space-y-2">
+            <Label>Tanggal</Label>
+            <Input
+              type="date"
+              value={form.upload_date || ""}
+              onChange={(e) => set("upload_date", e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
             <Label>Upload Foto</Label>
             <Input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
             {uploading && <p className="text-sm text-muted-foreground">Mengunggah...</p>}
             {form.image_url && (
               <img src={form.image_url} alt="Preview" className="w-full h-40 object-cover rounded mt-2" />
             )}
-          </div>
-          <div className="space-y-2">
-            <Label>Atau URL Gambar</Label>
-            <Input value={form.image_url || ""} onChange={(e) => set("image_url", e.target.value)} placeholder="/uploads/gallery/..." />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Batal</Button>

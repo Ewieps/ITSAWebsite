@@ -70,7 +70,8 @@ export function CabinetDialog({ cabinet, members, open, onClose, onSaveCabinet, 
   const handleSubmitCabinet = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    await onSaveCabinet(form)
+    const { cabinet_members, id, ...payload } = form
+    await onSaveCabinet(payload)
     setSaving(false)
     onClose()
   }

@@ -42,6 +42,7 @@ const EMPTY: Partial<Event> = {
 export function EventDialog({ item, open, onClose, onSave }: Props) {
   const [form, setForm] = useState<Partial<Event>>(EMPTY)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -56,6 +57,25 @@ export function EventDialog({ item, open, onClose, onSave }: Props) {
       setForm({ ...EMPTY })
     }
     if (!nextOpen) onClose()
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append("file", file)
+      fd.append("category", "events")
+      const res = await fetch("/api/upload", { method: "POST", body: fd })
+      const data = await res.json()
+      if (data.success) {
+        setForm((p) => ({ ...p, photo_url: data.path }))
+      }
+    } catch {
+      // ignore
+    }
+    setUploading(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,12 +105,12 @@ export function EventDialog({ item, open, onClose, onSave }: Props) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Tanggal</Label>
-              <Input type="date" value={form.date || ""} onChange={(e) => set("date", e.target.value)} required />
+              <Label>Tanggal (opsional)</Label>
+              <Input type="date" value={form.date || ""} onChange={(e) => set("date", e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Waktu</Label>
-              <Input value={form.time || ""} onChange={(e) => set("time", e.target.value)} placeholder="08:00 - 12:00" required />
+              <Label>Waktu (opsional)</Label>
+              <Input value={form.time || ""} onChange={(e) => set("time", e.target.value)} placeholder="08:00 - 12:00" />
             </div>
           </div>
           <div className="space-y-2">
@@ -100,15 +120,12 @@ export function EventDialog({ item, open, onClose, onSave }: Props) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Kategori</Label>
-              <Select value={form.category || "Latihan"} onValueChange={(v) => set("category", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Kompetisi">Kompetisi</SelectItem>
-                  <SelectItem value="Workshop">Workshop</SelectItem>
-                  <SelectItem value="Sosial">Sosial</SelectItem>
-                  <SelectItem value="Latihan">Latihan</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                value={form.category || ""}
+                onChange={(e) => set("category", e.target.value)}
+                placeholder="Kompetisi / Workshop / Sosial / Latihan"
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label>Status</Label>
@@ -123,8 +140,12 @@ export function EventDialog({ item, open, onClose, onSave }: Props) {
             </div>
           </div>
           <div className="space-y-2">
-            <Label>URL Foto (opsional)</Label>
-            <Input value={form.photo_url || ""} onChange={(e) => set("photo_url", e.target.value)} placeholder="/uploads/events/..." />
+            <Label>Foto (opsional)</Label>
+            <Input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
+            {uploading && <p className="text-sm text-muted-foreground">Mengunggah...</p>}
+            {form.photo_url && (
+              <img src={form.photo_url} alt="Preview" className="w-full h-40 object-cover rounded mt-2" />
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Batal</Button>

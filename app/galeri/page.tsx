@@ -5,12 +5,10 @@ import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Calendar, Eye } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import type { GalleryImage } from "@/lib/supabase"
-
-const CATEGORIES = ["Semua", "Kompetisi", "Latihan", "Event", "Prestasi"]
 
 export default function GaleriPage() {
   const [selectedCategory, setSelectedCategory] = useState("Semua")
@@ -24,6 +22,7 @@ export default function GaleriPage() {
       .then(({ data }) => setItems(data || []))
   }, [])
 
+  const categories = Array.from(new Set(items.map((i) => i.category).filter(Boolean)))
   const filtered =
     selectedCategory === "Semua" ? items : items.filter((i) => i.category === selectedCategory)
 
@@ -32,11 +31,10 @@ export default function GaleriPage() {
       <section className="py-20 bg-gradient-to-br from-primary to-primary-dark text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <Badge className="bg-accent text-accent-foreground mb-6">Galeri Foto</Badge>
+         
             <h1 className="text-4xl md:text-6xl font-bold mb-6">Galeri ITS Archery</h1>
             <p className="text-xl text-primary-foreground/80">
-              Dokumentasi perjalanan dan pencapaian ITS Archery dalam berbagai kegiatan, kompetisi, dan momen
-              bersejarah kami.
+              Dokumentasi kegiatan, prestasi, dan momen berharga yang telah diabadikan oleh ITS Archery. 
             </p>
           </div>
         </div>
@@ -45,7 +43,7 @@ export default function GaleriPage() {
       <section className="py-8 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap justify-center gap-4">
-            {CATEGORIES.map((cat) => (
+            {["Semua", ...categories].map((cat) => (
               <Button
                 key={cat}
                 variant={selectedCategory === cat ? "default" : "outline"}
@@ -94,16 +92,14 @@ export default function GaleriPage() {
                     </CardContent>
                   </Card>
                 </DialogTrigger>
-                <DialogContent className="max-w-4xl">
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogTitle className="sr-only">{item.title}</DialogTitle>
                   <div className="space-y-4">
-                    <div className="relative aspect-video overflow-hidden rounded-lg">
-                      <Image
-                        src={item.image_url || "/placeholder.svg"}
-                        alt={item.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
+                    <img
+                      src={item.image_url || "/placeholder.svg"}
+                      alt={item.title}
+                      className="max-h-[70vh] w-auto max-w-full mx-auto object-contain rounded-lg"
+                    />
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Badge variant="secondary">{item.category}</Badge>

@@ -1,0 +1,63 @@
+-- Seed data: 5 atlet + 5 umum registrations
+-- Run in Supabase Dashboard > SQL Editor.
+
+INSERT INTO registrations (
+  nama_lengkap, nrp, jurusan, no_telepon, email, tipe,
+  jawaban_pengetahuan, jenis_panah,
+  file_url_komitmen, file_url_bukti_ig, file_url_portofolio,
+  status, created_at
+) VALUES
+-- ===== ATLET =====
+('Reza Andhika Pratama', '5025211201', 'Teknik Informatika', '+62812-1001-2001', 'reza.andhika@student.its.ac.id', 'atlet',
+ '[{"pertanyaan": "Apa yang kamu ketahui tentang ITS Archery?", "jawaban": "UKM panahan ITS yang aktif di kejuaraan."}, {"pertanyaan": "Mengapa ingin bergabung?", "jawaban": "Ingin mengembangkan skill panahan dan berprestasi."}]',
+ 'Recurve',
+ '/uploads/registrations/reza-komitmen.pdf', '/uploads/registrations/reza-ig.png', '/uploads/registrations/reza-portofolio.pdf',
+ 'accepted', '2024-08-05 09:30:00+07'),
+('Nadia Aulia Ramadhani', '5025211202', 'Sistem Informasi', '+62812-1002-2002', 'nadia.aulia@student.its.ac.id', 'atlet',
+ '[{"pertanyaan": "Apa yang kamu ketahui tentang ITS Archery?", "jawaban": "Komunitas panahan dengan pembinaan rutin."}, {"pertanyaan": "Mengapa ingin bergabung?", "jawaban": "Pernah ikut kejuaraan daerah, ingin lanjut ke level nasional."}]',
+ 'Compound',
+ '/uploads/registrations/nadia-komitmen.pdf', '/uploads/registrations/nadia-ig.png', '/uploads/registrations/nadia-portofolio.pdf',
+ 'pending', '2024-08-06 10:15:00+07'),
+('Bagas Wicaksono', '5025211203', 'Teknik Mesin', '+62812-1003-2003', 'bagas.wicaksono@student.its.ac.id', 'atlet',
+ '[{"pertanyaan": "Apa yang kamu ketahui tentang ITS Archery?", "jawaban": "UKM olahraga di ITS."}, {"pertanyaan": "Mengapa ingin bergabung?", "jawaban": "Ingin menekuni olahraga panahan secara serius."}]',
+ 'Recurve',
+ '/uploads/registrations/bagas-komitmen.pdf', '/uploads/registrations/bagas-ig.png', '/uploads/registrations/bagas-portofolio.pdf',
+ 'pending', '2024-08-07 14:40:00+07'),
+('Cindy Fransiska', '5025211204', 'Desain Produk Industri', '+62812-1004-2004', 'cindy.fransiska@student.its.ac.id', 'atlet',
+ '[{"pertanyaan": "Apa yang kamu ketahui tentang ITS Archery?", "jawaban": "UKM panahan yang membina atlet dari nol."}, {"pertanyaan": "Mengapa ingin bergabung?", "jawaban": "Sudah 2 tahun latihan recurve, ingin bergabung dengan wadah resmi."}]',
+ 'Recurve',
+ '/uploads/registrations/cindy-komitmen.pdf', '/uploads/registrations/cindy-ig.png', '/uploads/registrations/cindy-portofolio.pdf',
+ 'rejected', '2024-08-08 08:50:00+07'),
+('Dimas Aditya Nugroho', '5025211205', 'Teknik Elektro', '+62812-1005-2005', 'dimas.aditya@student.its.ac.id', 'atlet',
+ '[{"pertanyaan": "Apa yang kamu ketahui tentang ITS Archery?", "jawaban": "Tempat latihan panahan di kampus."}, {"pertanyaan": "Mengapa ingin bergabung?", "jawaban": "Ingin bertanding mewakili ITS di kejuaraan."}]',
+ 'Traditional Bow',
+ '/uploads/registrations/dimas-komitmen.pdf', '/uploads/registrations/dimas-ig.png', '/uploads/registrations/dimas-portofolio.pdf',
+ 'accepted', '2024-08-09 11:20:00+07'),
+
+-- ===== UMUM =====
+('Fitria Ayu Lestari', '5025211301', 'Teknik Sipil', '+62812-1011-2011', 'fitria.ayu@student.its.ac.id', 'umum',
+ '[{"pertanyaan": "Apa yang kamu ketahui tentang ITS Archery?", "jawaban": "Belum tahu banyak, baru dengar dari teman."}, {"pertanyaan": "Mengapa ingin bergabung?", "jawaban": "Ingin mencoba olahraga baru dan dapat teman baru."}]',
+ NULL,
+ '/uploads/registrations/fitria-komitmen.pdf', '/uploads/registrations/fitria-ig.png', NULL,
+ 'accepted', '2024-08-10 13:05:00+07'),
+('Gilang Permana', '5025211302', 'Teknik Kimia', '+62812-1012-2012', 'gilang.permana@student.its.ac.id', 'umum',
+ '[{"pertanyaan": "Apa yang kamu ketahui tentang ITS Archery?", "jawaban": "UKM panahan ITS."}, {"pertanyaan": "Mengapa ingin bergabung?", "jawaban": "Penasaran dan ingin belajar dasar-dasar memanah."}]',
+ NULL,
+ '/uploads/registrations/gilang-komitmen.pdf', '/uploads/registrations/gilang-ig.png', NULL,
+ 'pending', '2024-08-11 09:00:00+07'),
+('Hana Maulida', '5025211303', 'Teknik Lingkungan', '+62812-1013-2013', 'hana.maulida@student.its.ac.id', 'umum',
+ '[{"pertanyaan": "Apa yang kamu ketahui tentang ITS Archery?", "jawaban": "Komunitas panahan kampus yang sering mengadakan open house."}, {"pertanyaan": "Mengapa ingin bergabung?", "jawaban": "Tertarik mengikuti kegiatan latihan rutin untuk mengisi waktu luang."}]',
+ NULL,
+ '/uploads/registrations/hana-komitmen.pdf', '/uploads/registrations/hana-ig.png', NULL,
+ 'pending', '2024-08-12 15:30:00+07'),
+('Iqbal Ramadhan', '5025211304', 'Teknik Perkapalan', '+62812-1014-2014', 'iqbal.ramadhan@student.its.ac.id', 'umum',
+ '[{"pertanyaan": "Apa yang kamu ketahui tentang ITS Archery?", "jawaban": "Tidak tahu, baru kenalan dari panitia OSPEK."}, {"pertanyaan": "Mengapa ingin bergabung?", "jawaban": "Ingin belajar panahan dari dasar bersama teman-teman baru."}]',
+ NULL,
+ '/uploads/registrations/iqbal-komitmen.pdf', '/uploads/registrations/iqbal-ig.png', NULL,
+ 'rejected', '2024-08-13 10:45:00+07'),
+('Jasmine Keisha Putri', '5025211305', 'Statistika', '+62812-1015-2015', 'jasmine.keisha@student.its.ac.id', 'umum',
+ '[{"pertanyaan": "Apa yang kamu ketahui tentang ITS Archery?", "jawaban": "UKM yang fokus di panahan."}, {"pertanyaan": "Mengapa ingin bergabung?", "jawaban": "Ingin menemukan hobi baru dan aktif berorganisasi di kampus."}]',
+ NULL,
+ '/uploads/registrations/jasmine-komitmen.pdf', '/uploads/registrations/jasmine-ig.png', NULL,
+ 'accepted', '2024-08-14 16:10:00+07')
+ON CONFLICT (nrp) DO NOTHING;

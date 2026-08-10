@@ -90,6 +90,7 @@ export interface Registration {
   nrp: string
   jurusan: string
   no_telepon: string
+  email: string | null
   tipe: "umum" | "atlet"
   jawaban_pengetahuan: { pertanyaan: string; jawaban: string }[]
   jenis_panah: string | null

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
   LogOut,
   RefreshCw,
@@ -105,6 +106,10 @@ function RegistrationDetail({ reg }: { reg: Registration }) {
               <p className="font-medium">{reg.no_telepon}</p>
             </div>
             <div>
+              <span className="text-muted-foreground">Email</span>
+              <p className="font-medium break-all">{reg.email || "-"}</p>
+            </div>
+            <div>
               <span className="text-muted-foreground">Tanggal Daftar</span>
               <p className="font-medium">
                 {new Date(reg.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
@@ -166,15 +171,23 @@ export default function AdminPage() {
   const [regOpen, setRegOpen] = useState(true)
   const [savingReg, setSavingReg] = useState(false)
   const [contactPhone, setContactPhone] = useState("")
+  const [contactPhone2, setContactPhone2] = useState("")
   const [contactEmail, setContactEmail] = useState("")
   const [contactInstagram, setContactInstagram] = useState("")
   const [contactYoutube, setContactYoutube] = useState("")
   const [savingContact, setSavingContact] = useState(false)
 
+  // About page content
+  const [aboutDesc, setAboutDesc] = useState("")
+  const [aboutVisi, setAboutVisi] = useState("")
+  const [aboutMisi, setAboutMisi] = useState("")
+  const [savingAbout, setSavingAbout] = useState(false)
+
   // Registrations
   const [registrations, setRegistrations] = useState<Registration[]>([])
   const [syncingSheets, setSyncingSheets] = useState(false)
   const [loadingReg, setLoadingReg] = useState(true)
+  const [regFilter, setRegFilter] = useState<"semua" | "umum" | "atlet">("semua")
 
   // Achievements
   const [achievements, setAchievements] = useState<Achievement[]>([])
@@ -220,9 +233,15 @@ export default function AdminPage() {
         if (data.settings.registration) setRegOpen(data.settings.registration.isOpen ?? true)
         if (data.settings.contact) {
           setContactPhone(data.settings.contact.phone || "")
+          setContactPhone2(data.settings.contact.phone2 || "")
           setContactEmail(data.settings.contact.email || "")
           setContactInstagram(data.settings.contact.instagram || "")
           setContactYoutube(data.settings.contact.youtube || "")
+        }
+        if (data.settings.about) {
+          setAboutDesc(data.settings.about.description || "")
+          setAboutVisi(data.settings.about.visi || "")
+          setAboutMisi(data.settings.about.misi || "")
         }
       }
     } catch { /* ignore */ }
@@ -299,11 +318,26 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           key: "contact",
-          value: { phone: contactPhone, email: contactEmail, instagram: contactInstagram, youtube: contactYoutube },
+          value: { phone: contactPhone, phone2: contactPhone2, email: contactEmail, instagram: contactInstagram, youtube: contactYoutube },
         }),
       })
     } catch { /* ignore */ }
     setSavingContact(false)
+  }
+
+  const saveAboutSetting = async () => {
+    setSavingAbout(true)
+    try {
+      await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          key: "about",
+          value: { description: aboutDesc, visi: aboutVisi, misi: aboutMisi },
+        }),
+      })
+    } catch { /* ignore */ }
+    setSavingAbout(false)
   }
 
   // ---- CRUD ----
@@ -341,7 +375,7 @@ export default function AdminPage() {
     if (data.id) {
       await apiAdmin("/api/admin/gallery", "PUT", data)
     } else {
-      await apiAdmin("/api/admin/gallery", "POST", { ...data, upload_date: new Date().toISOString().slice(0, 10) })
+      await apiAdmin("/api/admin/gallery", "POST", { ...data, upload_date: data.upload_date || new Date().toISOString().slice(0, 10) })
     }
     fetchGallery()
   }
@@ -407,6 +441,11 @@ export default function AdminPage() {
     )
   }
 
+  const filteredRegs =
+    regFilter === "semua"
+      ? registrations
+      : registrations.filter((r) => r.tipe === regFilter)
+
   return (
     <div className="min-h-screen bg-muted/30 p-6">
       <div className="max-w-6xl mx-auto">
@@ -445,10 +484,14 @@ export default function AdminPage() {
             {/* Contact info */}
             <div className="border-t pt-4">
               <p className="font-medium mb-3">Informasi Kontak (ditampilkan di halaman Kontak)</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="space-y-1">
-                  <Label className="text-xs">No. Telepon</Label>
+                  <Label className="text-xs">No. Telepon 1</Label>
                   <Input size={1} value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="08xxx" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">No. Telepon 2</Label>
+                  <Input size={1} value={contactPhone2} onChange={(e) => setContactPhone2(e.target.value)} placeholder="08xxx" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Email</Label>
@@ -478,6 +521,7 @@ export default function AdminPage() {
             <TabsTrigger value="events"><Calendar className="w-4 h-4 mr-1" /> Kegiatan</TabsTrigger>
             <TabsTrigger value="gallery"><ImageIcon className="w-4 h-4 mr-1" /> Galeri</TabsTrigger>
             <TabsTrigger value="cabinets"><Landmark className="w-4 h-4 mr-1" /> Kabinet</TabsTrigger>
+            <TabsTrigger value="about"><Settings className="w-4 h-4 mr-1" /> Tentang</TabsTrigger>
             <TabsTrigger value="hero"><ImageIcon className="w-4 h-4 mr-1" /> Hero</TabsTrigger>
           </TabsList>
 
@@ -485,17 +529,34 @@ export default function AdminPage() {
           <TabsContent value="registrations">
             <div className="space-y-3">
               <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-                <p className="text-sm text-muted-foreground">{registrations.length} pendaftaran terdaftar</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex gap-1">
+                    {(["semua", "umum", "atlet"] as const).map((f) => (
+                      <Button
+                        key={f}
+                        size="sm"
+                        variant={regFilter === f ? "default" : "outline"}
+                        onClick={() => setRegFilter(f)}
+                        className="capitalize"
+                      >
+                        {f === "semua" ? "Semua" : f === "umum" ? "Umum" : "Atlet"}
+                      </Button>
+                    ))}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {filteredRegs.length} pendaftaran terdaftar
+                  </p>
+                </div>
                 <Button size="sm" variant="outline" onClick={handleSheetsSync} disabled={syncingSheets}>
                   {syncingSheets ? "Menyinkronkan..." : "Sinkronkan ke Google Sheets"}
                 </Button>
               </div>
               {loadingReg ? (
                 <p className="text-muted-foreground text-sm">Memuat data...</p>
-              ) : registrations.length === 0 ? (
+              ) : filteredRegs.length === 0 ? (
                 <Card><CardContent className="p-8 text-center"><p className="text-muted-foreground">Belum ada pendaftaran masuk.</p></CardContent></Card>
               ) : (
-                registrations.map((reg) => <RegistrationDetail key={reg.id} reg={reg} />)
+                filteredRegs.map((reg) => <RegistrationDetail key={reg.id} reg={reg} />)
               )}
             </div>
           </TabsContent>
@@ -708,6 +769,45 @@ export default function AdminPage() {
               onSaveMember={handleSaveCabinetMember}
               onDeleteMember={handleDeleteCabinetMember}
             />
+          </TabsContent>
+
+          {/* ---- Tentang ---- */}
+          <TabsContent value="about">
+            <Card>
+              <CardContent className="p-6 space-y-6">
+                <div className="space-y-2">
+                  <Label>Deskripsi (halaman Tentang Kami)</Label>
+                  <Textarea
+                    value={aboutDesc}
+                    onChange={(e) => setAboutDesc(e.target.value)}
+                    rows={6}
+                    placeholder="Deskripsi ITS Archery. Gunakan baris kosong untuk memisahkan paragraf."
+                  />
+                  <p className="text-xs text-muted-foreground">Kosongkan untuk memakai teks bawaan.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Visi</Label>
+                  <Textarea
+                    value={aboutVisi}
+                    onChange={(e) => setAboutVisi(e.target.value)}
+                    rows={3}
+                    placeholder="Visi ITS Archery"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Misi</Label>
+                  <Textarea
+                    value={aboutMisi}
+                    onChange={(e) => setAboutMisi(e.target.value)}
+                    rows={5}
+                    placeholder="Tulis setiap misi pada baris terpisah."
+                  />
+                </div>
+                <Button size="sm" disabled={savingAbout} onClick={saveAboutSetting}>
+                  {savingAbout ? "Menyimpan..." : "Simpan Tentang"}
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* ---- Hero ---- */}

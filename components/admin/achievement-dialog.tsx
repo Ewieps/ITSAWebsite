@@ -41,6 +41,7 @@ const EMPTY: Partial<Achievement> = {
 export function AchievementDialog({ item, open, onClose, onSave }: Props) {
   const [form, setForm] = useState<Partial<Achievement>>(EMPTY)
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -55,6 +56,25 @@ export function AchievementDialog({ item, open, onClose, onSave }: Props) {
       setForm({ ...EMPTY })
     }
     if (!nextOpen) onClose()
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append("file", file)
+      fd.append("category", "achievements")
+      const res = await fetch("/api/upload", { method: "POST", body: fd })
+      const data = await res.json()
+      if (data.success) {
+        setForm((p) => ({ ...p, photo_url: data.path }))
+      }
+    } catch {
+      // ignore
+    }
+    setUploading(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -115,8 +135,12 @@ export function AchievementDialog({ item, open, onClose, onSave }: Props) {
             </div>
           </div>
           <div className="space-y-2">
-            <Label>URL Foto (opsional)</Label>
-            <Input value={form.photo_url || ""} onChange={(e) => set("photo_url", e.target.value)} placeholder="/uploads/achievements/..." />
+            <Label>Foto (opsional)</Label>
+            <Input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
+            {uploading && <p className="text-sm text-muted-foreground">Mengunggah...</p>}
+            {form.photo_url && (
+              <img src={form.photo_url} alt="Preview" className="w-full h-40 object-cover rounded mt-2" />
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Batal</Button>

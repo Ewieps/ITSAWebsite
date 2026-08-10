@@ -67,18 +67,16 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6 relative z-10">
-              <Badge className="bg-accent text-accent-foreground">ITS Archery</Badge>
               <h1 className="text-4xl md:text-6xl font-bold leading-tight">
                 ITS Archery,
                 <span className="block text-accent">Membidik Dengan</span><span className="block text-destructive">Hati!</span>
               </h1>
               <p className="text-xl text-primary-foreground/80 max-w-lg">
-                Bergabunglah dengan komunitas panahan Institut Teknologi Sepuluh Nopember. Kembangkan skill,
-                raih prestasi, dan jadilah bagian dari keluarga besar ITS Archery.
+                Selamat datang di website resmi ITS Archery. Temukan informasi terbaru, kegiatan, dan pencapaian kami di sini.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground" asChild>
-                  <Link href="/pendaftaran">Bergabung Sekarang</Link>
+                <Button size="lg" className="bg-accent hover:bg-accent/90 text-primary-foreground" asChild>
+                  <Link href="/pendaftaran">Tertarik untuk bergabung,</Link>
                 </Button>
                 <Button
                   size="lg"
@@ -86,7 +84,7 @@ export default function HomePage() {
                   className="border-white text-white hover:bg-white hover:text-primary bg-transparent"
                   asChild
                 >
-                  <Link href="/tentang-kami">Pelajari Lebih Lanjut</Link>
+                  <Link href="/tentang-kami">Atau ingin pelajari Lebih Lanjut?</Link>
                 </Button>
               </div>
             </div>
@@ -145,22 +143,15 @@ export default function HomePage() {
       {/* CTA */}
       <section className="py-20 bg-primary text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Tertarik untuk bergabung dengan ITS Archery?</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Butuh Bantuan?</h2>
           <p className="text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
-            Mulai atau lanjutkan perjalananmu di ranah Panahan!
+            Sampaikan pertanyaan atau masukan Anda dengan menghubungi kami.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground" asChild>
-              <Link href="/pendaftaran">Daftar Sekarang</Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-white text-white hover:bg-white hover:text-primary bg-transparent"
-              asChild
-            >
               <Link href="/kontak">Hubungi Kami</Link>
             </Button>
+        
           </div>
         </div>
       </section>

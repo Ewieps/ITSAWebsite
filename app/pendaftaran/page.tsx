@@ -36,6 +36,7 @@ interface FormData {
   nrp: string
   jurusan: string
   noTelepon: string
+  email: string
   jawaban: string[]
   jenisPanah: string
   fileKomitmen: File | null
@@ -141,6 +142,7 @@ export default function PendaftaranPage() {
     nrp: "",
     jurusan: "",
     noTelepon: "",
+    email: "",
     jawaban: ["", ""],
     jenisPanah: "",
     fileKomitmen: null,
@@ -164,7 +166,7 @@ export default function PendaftaranPage() {
       case 0:
         return formData.tipe !== ""
       case 1:
-        return formData.namaLengkap.trim() !== "" && formData.nrp.trim() !== "" && formData.jurusan.trim() !== "" && formData.noTelepon.trim() !== "" && (formData.tipe !== "atlet" || formData.jenisPanah.trim() !== "")
+        return formData.namaLengkap.trim() !== "" && formData.nrp.trim() !== "" && formData.jurusan.trim() !== "" && formData.noTelepon.trim() !== "" && formData.email.trim() !== "" && (formData.tipe !== "atlet" || formData.jenisPanah.trim() !== "")
       case 2:
         return formData.jawaban.every((j) => j.trim() !== "")
       case 3:
@@ -197,6 +199,7 @@ export default function PendaftaranPage() {
           nrp: formData.nrp,
           jurusan: formData.jurusan,
           noTelepon: formData.noTelepon,
+          email: formData.email,
           tipe: formData.tipe,
           jawabanPengetahuan: PERTANYAAN_PENGETAHUAN.map((p, i) => ({
             pertanyaan: p,
@@ -428,6 +431,19 @@ export default function PendaftaranPage() {
                         />
                       </div>
                     </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email *</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => set("email", e.target.value)}
+                          placeholder="nama@email.com"
+                          required
+                        />
+                      </div>
+                    </div>
                     {formData.tipe === "atlet" && (
                       <div className="space-y-2">
                         <Label htmlFor="jenisPanah">Jenis Panah yang Digunakan *</Label>
@@ -467,14 +483,14 @@ export default function PendaftaranPage() {
                     <Alert className="border-blue-200 bg-blue-50">
                       <Download className="h-4 w-4 text-blue-600" />
                       <AlertDescription className="text-blue-800">
-                        <strong>Unduh formulir</strong> di bawah, isi, dan lampirkan kembali sebagai PDF.
+                        <strong>Unduh surat komitmen</strong> di bawah, isi, dan lampirkan kembali sebagai PDF.
                         <br />
                         <a
-                          href="/formulir-pendaftaran.docx"
+                          href="/templates/surat-komitmen.docx"
                           download
                           className="underline font-medium hover:text-blue-600 mt-1 inline-block"
                         >
-                          Download Formulir Pendaftaran (.docx)
+                          Download Surat Komitmen (.docx)
                         </a>
                       </AlertDescription>
                     </Alert>
@@ -521,6 +537,8 @@ export default function PendaftaranPage() {
                       <span className="font-medium">{formData.jurusan}</span>
                       <span className="text-muted-foreground">No. Telepon</span>
                       <span className="font-medium">{formData.noTelepon}</span>
+                      <span className="text-muted-foreground">Email</span>
+                      <span className="font-medium">{formData.email}</span>
                       {formData.tipe === "atlet" && (
                         <>
                           <span className="text-muted-foreground">Jenis Panah</span>

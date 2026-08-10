@@ -11,7 +11,7 @@ export async function POST() {
 
   if (!isSheetsConfigured()) {
     return NextResponse.json(
-      { success: false, message: "Google Sheets belum dikonfigurasi. Set GOOGLE_SERVICE_ACCOUNT_KEY, GOOGLE_SPREADSHEET_ID, dan GOOGLE_SHEET_NAME." },
+      { success: false, message: "Google Sheets belum dikonfigurasi atau GOOGLE_SERVICE_ACCOUNT_KEY tidak valid (harus JSON satu baris). Set GOOGLE_SERVICE_ACCOUNT_KEY, GOOGLE_SPREADSHEET_ID, dan GOOGLE_SHEET_NAME." },
       { status: 400 }
     )
   }
@@ -41,6 +41,10 @@ export async function POST() {
     })
   } catch (err) {
     console.error("Sync error:", err)
-    return NextResponse.json({ success: false, message: "Gagal sinkronisasi." }, { status: 500 })
+    const message =
+      err instanceof Error
+        ? `Gagal sinkronisasi: ${err.message}`
+        : "Gagal sinkronisasi."
+    return NextResponse.json({ success: false, message }, { status: 500 })
   }
 }

@@ -25,6 +25,7 @@ export async function POST(request: Request) {
     const nrp = body.nrp as string
     const jurusan = body.jurusan as string
     const noTelepon = body.noTelepon as string
+    const email = (body.email as string) || null
     const tipe = body.tipe as string
     const jawabanPengetahuan = (body.jawabanPengetahuan as { pertanyaan: string; jawaban: string }[]) || []
     const jenisPanah = (body.jenisPanah as string) || null
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
     const fileUrlBuktiIg = (body.fileUrlBuktiIg as string) || ""
     const fileUrlPortofolio = (body.fileUrlPortofolio as string) || null
 
-    if (!namaLengkap || !nrp || !jurusan || !noTelepon || !tipe) {
+    if (!namaLengkap || !nrp || !jurusan || !noTelepon || !email || !tipe) {
       return NextResponse.json(
         { success: false, message: "Semua field wajib diisi." },
         { status: 400 }
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
         nrp,
         jurusan,
         no_telepon: noTelepon,
+        email,
         tipe,
         jawaban_pengetahuan: jawabanPengetahuan,
         jenis_panah: jenisPanah,

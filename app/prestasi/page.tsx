@@ -46,17 +46,16 @@ export default function PrestasiPage() {
       <section className="py-20 bg-gradient-to-br from-primary to-primary-dark text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <Badge className="bg-accent text-accent-foreground mb-6">Hall of Fame</Badge>
+      
             <h1 className="text-4xl md:text-6xl font-bold mb-6">Prestasi Kami</h1>
             <p className="text-xl text-primary-foreground/80">
-              Pencapaian gemilang yang telah diraih ITS Archery dalam berbagai kompetisi tingkat lokal, regional, hingga
-              nasional.
+              Pencapaian gemilang yang telah diraih ITS Archery dalam berbagai kompetisi, serta kegiatan dan penghargaan.
             </p>
           </div>
         </div>
       </section>
 
-      <section className="py-16 bg-secondary/50">
+      {/* <section className="py-16 bg-secondary/50">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {statistik.map((stat, index) => (
@@ -70,14 +69,14 @@ export default function PrestasiPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Prestasi Terbaru</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Daftar Prestasi</h2>
             <p className="text-xl text-muted-foreground">
-              Pencapaian terkini yang membanggakan dari para atlet ITS Archery
+              Daftar pencapaian terkini dari para atlet, anggota, serta staff ITS Archery.
             </p>
           </div>
 

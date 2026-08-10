@@ -29,8 +29,18 @@ const objekLogo = [
   { name: "Tiga Garis Hitam", meaning: "Organisasi yang Dinamis" },
 ]
 
+const FALLBACK_ABOUT = {
+  description:
+    "UKM ITS Archery (ITSA) merupakan UKM Olahraga di ITS yang bergerak di bidang panahan. ITSA didirikan pada 8 November 2016 di ITS oleh sekelompok mahasiswa yang memiliki minat dalam olahraga panahan.\n\nSetelah 6 bulan vakum, anggota-anggota yang tergabung di dalamnya mulai tergerak kembali untuk membangkitkan komunitas tersebut. Dengan semangat membara, beberapa anggota yang tersisa berhasil menghidupkan kembali komunitas hingga berkembang seperti sekarang ini.\n\nPada 27 Mei 2019, ITS Archery resmi menjadi UKM di ITS.",
+  visi:
+    "Menjadi wadah pengembangan diri pada bidang panahan di KM ITS terutama pada bidang minat bakat yang terukur secara nyata dan berkualitas serta menjadi rumah untuk berkembang bagi seluruh anggota dan staff.",
+  misi:
+    "Meningkatkan minat dan bakat seluruh anggota melalui pelatihan dan pembinaan yang berkelanjutan.\nMeningkatkan rasa tanggungjawab dan komitmen yang kuat melalui profesionalisme yang ada.\nMenciptakan lingkungan yang nyaman bagi seluruh anggota dan staff.",
+}
+
 export default function TentangKamiPage() {
   const [cabinets, setCabinets] = useState<CabinetWithMembers[]>([])
+  const [about, setAbout] = useState(FALLBACK_ABOUT)
 
   useEffect(() => {
     supabase
@@ -39,6 +49,22 @@ export default function TentangKamiPage() {
       .order("year", { ascending: true })
       .order("id", { ascending: true })
       .then(({ data }) => setCabinets((data as CabinetWithMembers[]) || []))
+  }, [])
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && data.settings.about) {
+          const a = data.settings.about
+          setAbout({
+            description: a.description || FALLBACK_ABOUT.description,
+            visi: a.visi || FALLBACK_ABOUT.visi,
+            misi: a.misi || FALLBACK_ABOUT.misi,
+          })
+        }
+      })
+      .catch(() => {})
   }, [])
 
   const current = cabinets.find((c) => c.is_current)
@@ -50,10 +76,10 @@ export default function TentangKamiPage() {
       <section className="py-20 bg-gradient-to-br from-primary to-primary-dark text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <Badge className="bg-accent text-accent-foreground mb-6">Tentang Kami</Badge>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">ITS Archery</h1>
+      
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">Tentang ITS Archery</h1>
             <p className="text-xl text-primary-foreground/80">
-              UKM Olahraga di ITS yang bergerak di bidang panahan. Didirikan pada 8 November 2016.
+              Disini, Anda dapat menemukan informasi lengkap mengenai ITS Archery; Sejarah, makna, visi & misi, serta kabinet yang telah berkontribusi dalam perjalanan organisasi ini.
             </p>
           </div>
         </div>
@@ -78,19 +104,7 @@ export default function TentangKamiPage() {
             </div>
 
             <div className="prose prose-lg max-w-none text-muted-foreground space-y-4">
-              <p>
-                UKM ITS Archery (ITSA) merupakan UKM Olahraga di ITS yang bergerak di bidang panahan.
-                ITSA didirikan pada 8 November 2016 di ITS oleh sekelompok mahasiswa yang memiliki minat
-                dalam olahraga panahan.
-              </p>
-              <p>
-                Setelah 6 bulan vakum, anggota-anggota yang tergabung di dalamnya mulai tergerak kembali
-                untuk membangkitkan komunitas tersebut. Dengan semangat membara, beberapa anggota yang
-                tersisa berhasil menghidupkan kembali komunitas hingga berkembang seperti sekarang ini.
-              </p>
-              <p>
-                Pada 27 Mei 2019, ITS Archery resmi menjadi UKM di ITS.
-              </p>
+              <p className="whitespace-pre-line">{about.description}</p>
             </div>
           </div>
         </div>
@@ -106,17 +120,15 @@ export default function TentangKamiPage() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-12 items-start">
-              {/* Logo placeholder on left */}
+              {/* Logo on left */}
               <div className="flex items-center justify-center">
-                <div className="w-64 h-64 md:w-80 md:h-80 rounded-2xl border-2 border-dashed border-muted-foreground/30 flex items-center justify-center bg-background/50">
-                  <Image
-                    src="/uploads/material/ITSAlogo.png"
-                    alt="Logo ITS Archery"
-                    width={200}
-                    height={200}
-                    className="opacity-80"
-                  />
-                </div>
+                <Image
+                  src="/uploads/material/ITSAlogo.png"
+                  alt="Logo ITS Archery"
+                  width={320}
+                  height={320}
+                  className="opacity-80"
+                />
               </div>
 
               {/* Descriptions on right */}
@@ -178,11 +190,7 @@ export default function TentangKamiPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-lg text-muted-foreground">
-                  Menjadi wadah pengembangan diri pada bidang panahan di KM ITS terutama pada bidang
-                  minat bakat yang terukur secara nyata dan berkualitas serta menjadi rumah untuk
-                  berkembang bagi seluruh anggota dan staff.
-                </p>
+                <p className="text-lg text-muted-foreground whitespace-pre-line">{about.visi}</p>
               </CardContent>
             </Card>
 
@@ -197,9 +205,9 @@ export default function TentangKamiPage() {
               </CardHeader>
               <CardContent>
                 <ol className="space-y-3 text-muted-foreground list-decimal list-inside">
-                  <li>Meningkatkan minat dan bakat seluruh anggota melalui pelatihan dan pembinaan yang berkelanjutan.</li>
-                  <li>Meningkatkan rasa tanggungjawab dan komitmen yang kuat melalui profesionalisme yang ada.</li>
-                  <li>Menciptakan lingkungan yang nyaman bagi seluruh anggota dan staff.</li>
+                  {about.misi.split("\n").filter(Boolean).map((m, i) => (
+                    <li key={i}>{m}</li>
+                  ))}
                 </ol>
               </CardContent>
             </Card>
@@ -341,9 +349,23 @@ export default function TentangKamiPage() {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
-                      {cabinet.description && (
-                        <p className="text-muted-foreground">{cabinet.description}</p>
-                      )}
+                      <div className="flex flex-col sm:flex-row gap-6 items-start pb-4">
+                        {cabinet.logo_url && (
+                          <div className="shrink-0 mx-auto sm:mx-0">
+                            <img
+                              src={cabinet.logo_url}
+                              alt={`Logo Kabinet ${cabinet.name}`}
+                              className="w-56 h-56 sm:w-64 sm:h-64 rounded-xl object-cover shadow-md border"
+                            />
+                          </div>
+                        )}
+                        {cabinet.description && (
+                          <p className="text-muted-foreground flex-1 whitespace-pre-line">{cabinet.description}</p>
+                        )}
+                        {cabinet.logo_url && !cabinet.description && (
+                          <p className="text-muted-foreground">Belum ada deskripsi untuk kabinet ini.</p>
+                        )}
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
                 ))}
