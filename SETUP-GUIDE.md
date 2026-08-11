@@ -37,6 +37,16 @@ npm install
 2. Copy-paste isi file `scripts/create-tables.sql`
 3. Klik "Run" untuk membuat tables dan sample data
 
+#### D. Setup Kode Undangan Admin (via DB, tanpa redeploy)
+1. Jalankan `supabase/migrations/0005_admin_invite_code.sql` di SQL Editor untuk membuat tabel `admin_config` (RLS aktif, tidak ada policy — hanya bisa diakses via service role / dashboard).
+2. Set kode pertama:
+   \`\`\`sql
+   insert into public.admin_config (key, value, updated_at)
+   values ('admin_invite_code', '{"code": "KODE-RAHASIA-ANDA"}', now());
+   \`\`\`
+3. Untuk mengubah kode di kemudian hari, jalankan UPDATE langsung di SQL Editor (berlaku seketika, tanpa redeploy). Kosongkan (`'{"code": ""}'`) atau hapus baris untuk menonaktifkan pendaftaran admin.
+4. Jika tabel `admin_config` belum diisi, kode fallback `ADMIN_INVITE_CODE` dari env masih dipakai.
+
 ### 3. Environment Variables
 \`\`\`bash
 # Copy file example
@@ -46,6 +56,9 @@ cp .env.local.example .env.local
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+# Kode undangan untuk pendaftaran admin via /admin/signup (fallback; nonaktif jika kosong).
+# Direkomendasikan untuk mengelola kode via DB (tanpa redeploy) — lihat bagian "Mengubah Kode Undangan".
+ADMIN_INVITE_CODE=ganti-dengan-kode-rahasia
 \`\`\`
 
 ### 4. Setup Storage untuk Gambar

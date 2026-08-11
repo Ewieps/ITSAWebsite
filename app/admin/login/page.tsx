@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Lock, AlertCircle } from "lucide-react"
+import Link from "next/link"
 import { signIn } from "@/lib/supabase"
 
 export default function AdminLoginPage() {
@@ -86,6 +87,12 @@ export default function AdminLoginPage() {
               {loading ? "Masuk..." : "Masuk"}
             </Button>
           </form>
+          <p className="text-center text-sm text-muted-foreground mt-4">
+            Belum punya akun?{" "}
+            <Link href="/admin/signup" className="text-primary underline font-medium">
+              Daftar di sini
+            </Link>
+          </p>
         </CardContent>
       </Card>
     </div>

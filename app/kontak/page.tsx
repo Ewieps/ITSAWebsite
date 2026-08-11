@@ -64,7 +64,7 @@ export default function KontakPage() {
 
   const CopyHint = ({ label }: { label: string }) => (
     <span className="flex items-center gap-1 text-xs text-green-600">
-      <Check className="w-3 h-3" /> {copied === label ? "Disalin!" : "Klik untuk salin"}
+       {copied === label ? "Disalin!" : "Salin"}
     </span>
   )
 
@@ -83,7 +83,8 @@ export default function KontakPage() {
             <Badge className="bg-accent text-accent-foreground mb-6">Hubungi Kami</Badge>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">Kontak ITS Archery</h1>
             <p className="text-xl text-primary-foreground/80">
-              Punya pertanyaan atau ingin bergabung dengan kami? Jangan ragu untuk menghubungi tim ITS Archery.
+              Punya pertanyaan atau ingin bergabung dengan kami? Jangan ragu untuk menghubungi CP kami  melalui media dibawah.
+
             </p>
           </div>
         </div>
@@ -162,17 +163,17 @@ export default function KontakPage() {
               </div>
             </div>
 
-            {/* Contact Form */}
+            {/* Contact Form
             <div>
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-2xl">Kirim Pesan</CardTitle>
-                  <CardDescription>Isi form di bawah ini dan kami akan menghubungi Anda kembali</CardDescription>
+                  <CardTitle className="text-2xl">Kirim Email</CardTitle>
+                  <CardDescription>Isi form di bawah ini untuk mengirim email kepada kami</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Nama Lengkap</label>
+                      <label className="text-sm font-medium">Nama</label>
                       <Input placeholder="Masukkan nama lengkap" />
                     </div>
                     <div className="space-y-2">
@@ -194,10 +195,10 @@ export default function KontakPage() {
                     <label className="text-sm font-medium">Pesan</label>
                     <Textarea placeholder="Tulis pesan Anda di sini..." className="min-h-[120px]" />
                   </div>
-                  <Button className="w-full">Kirim Pesan</Button>
+                  <Button className="w-full">Kirim Email</Button>
                 </CardContent>
               </Card>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>

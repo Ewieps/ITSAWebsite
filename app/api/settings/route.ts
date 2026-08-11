@@ -13,6 +13,7 @@ export async function GET() {
   }
   const settings: Record<string, unknown> = {}
   for (const row of data || []) {
+    if (row.key === "admin_invite_code") continue
     settings[row.key] = row.value
   }
   return NextResponse.json({ success: true, settings })
@@ -27,6 +28,9 @@ export async function PUT(request: Request) {
     const { key, value } = await request.json()
     if (!key || value === undefined) {
       return NextResponse.json({ success: false, message: "key and value required" }, { status: 400 })
+    }
+    if (key === "admin_invite_code") {
+      return NextResponse.json({ success: false, message: "Key tidak diizinkan." }, { status: 403 })
     }
     const supabase = await createServerSupabase()
     const now = new Date().toISOString()
