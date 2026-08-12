@@ -504,7 +504,7 @@ export default function PendaftaranPage() {
                     />
 
                     <FileInput
-                      label="Bukti Follow Instagram ITS Archery (PDF)"
+                      label="Bukti Follow Instagram & Tiktok ITS Archery (SS jadikan 1 PDF)"
                       icon={Instagram}
                       file={formData.fileBuktiIG}
                       onChange={(f) => set("fileBuktiIG", f)}
