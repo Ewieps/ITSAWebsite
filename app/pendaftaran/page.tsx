@@ -177,9 +177,13 @@ export default function PendaftaranPage() {
   }
 
   const handleSubmit = async () => {
+    if (isSubmitting) return
     setIsSubmitting(true)
     setError(null)
 
+    let fileUrlKomitmen: string | null = null
+    let fileUrlBuktiIg: string | null = null
+    let fileUrlPortofolio: string | null = null
     try {
       const uploads: Promise<string | null>[] = [
         uploadFileClient(formData.fileKomitmen!, "registrations/komitmen"),
@@ -188,9 +192,14 @@ export default function PendaftaranPage() {
           ? uploadFileClient(formData.filePortofolio, "registrations/portofolio")
           : Promise.resolve(null),
       ]
+      ;[fileUrlKomitmen, fileUrlBuktiIg, fileUrlPortofolio] = await Promise.all(uploads)
+    } catch {
+      setError("Gagal mengunggah berkas. Periksa koneksi Anda dan coba lagi.")
+      setIsSubmitting(false)
+      return
+    }
 
-      const [fileUrlKomitmen, fileUrlBuktiIg, fileUrlPortofolio] = await Promise.all(uploads)
-
+    try {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -211,16 +220,27 @@ export default function PendaftaranPage() {
           fileUrlPortofolio,
         }),
       })
-      const data = await res.json()
+
+      let data: { success?: boolean; message?: string } | null = null
+      try {
+        data = await res.json()
+      } catch {
+        data = null
+      }
 
       if (!res.ok) {
-        setError(data.message || "Terjadi kesalahan.")
+        setError(
+          data?.message ||
+            (res.status >= 500
+              ? "Server sedang sibuk. Silakan coba lagi beberapa saat."
+              : "Terjadi kesalahan. Silakan coba lagi.")
+        )
         return
       }
 
       setIsSubmitted(true)
     } catch {
-      setError("Tidak dapat terhubung ke server.")
+      setError("Tidak dapat terhubung ke server. Periksa koneksi Anda dan coba lagi.")
     } finally {
       setIsSubmitting(false)
     }
